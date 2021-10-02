@@ -18,10 +18,12 @@ def denoise(noisy,data_parameter,reg_parameter,niter=100,show=False):
 
 def denoise_ds(dsfile,data_parameter,reg_parameter,niter=100,show=False):
     ds = load_ds_file(dsfile)
-    reconstruction = []
+    reconstruction = {}
     for img in ds.keys():
+        original = np.array(Image.open(img.strip()))
+        original = original / np.max(original)
         noisy = np.array(Image.open(ds[img].strip()))
         noisy = noisy / np.max(noisy)
         rec = denoise(noisy,data_parameter,reg_parameter,niter=niter,show=show)
-        reconstruction.append(rec)
+        reconstruction.update({img:(original,noisy,rec)})
     return reconstruction
