@@ -1,6 +1,7 @@
 import unittest
+from PIL import Image
 import numpy as np
-from TVDenoising.scalar_denoising import denoise
+from TVDenoising.scalar_denoising import denoise, denoise_ds
 
 class ScalarTVTest(unittest.TestCase):
     def test_denoise(self):
@@ -11,3 +12,7 @@ class ScalarTVTest(unittest.TestCase):
         noisy = orig + noise
         rec = denoise(noisy,0.1,0.6,niter=1000,show=True)
         print(f'noisy:{np.linalg.norm(noisy)} rec:{np.linalg.norm(rec)}')
+
+    def test_ds_denoise(self):
+        rec = denoise_ds('datasets/faces_train_128_10/filelist.txt',10.0,1.0,show=True)
+        print(len(rec))
