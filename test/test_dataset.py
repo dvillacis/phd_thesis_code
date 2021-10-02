@@ -1,0 +1,9 @@
+import unittest
+import numpy as np
+from Dataset.load_dataset import load_ds_file
+
+class DatasetTest(unittest.TestCase):
+    def test_load(self):
+        dsfile = 'datasets/cameraman_128/cameraman_128.ds'
+        ds = load_ds_file(dsfile)
+        print(ds)
