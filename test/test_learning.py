@@ -13,8 +13,8 @@ class LearningTest(unittest.TestCase):
         c = l2_cost(orig,noisy)
         print(c)
     
-    def test_ds_l2cost(self):
-        den_ds = denoise_ds('datasets/faces_train_128_10/filelist.txt',20,1.0)
+    def test_ds_cost(self):
+        den_ds = denoise_ds('datasets/faces_train_128_10/filelist.txt',30,1.0)
         cost = l2_cost_ds(den_ds)
         ssim = ssim_cost_ds(den_ds)
         psnr = psnr_cost_ds(den_ds)
