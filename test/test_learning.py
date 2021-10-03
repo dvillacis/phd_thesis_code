@@ -1,7 +1,8 @@
 import unittest
 import numpy as np
 from Learning.cost import l2_cost,l2_cost_ds, psnr_cost_ds, ssim_cost_ds
-from TVDenoising.scalar_denoising import denoise_ds
+from TVDenoising.scalar_denoising import denoise, denoise_ds
+from Learning.data_gradient import scalar_data_adjoint, scalar_data_gradient
 
 class LearningTest(unittest.TestCase):
     def test_l2cost(self):
@@ -19,3 +20,23 @@ class LearningTest(unittest.TestCase):
         ssim = ssim_cost_ds(den_ds)
         psnr = psnr_cost_ds(den_ds)
         print(f'l2:{cost} ssim:{ssim} psnr:{psnr}')
+
+    def test_scalar_data_adjoint(self):
+        np.random.seed(12345)
+        n = 10
+        orig = np.ones((n,n))
+        noise = 0.1*np.random.randn(n,n)
+        noisy = orig + noise
+        rec = denoise(noise,12.0,1.0)
+        p = scalar_data_adjoint(orig,rec,12.0,show=True)
+
+    def test_scalar_gradient(self):
+        np.random.seed(12345)
+        n = 128
+        orig = np.ones((n,n))
+        noise = 0.1*np.random.randn(n,n)
+        noisy = orig + noise
+        par = 1e-5
+        rec = denoise(noise,par,1.0)
+        g = scalar_data_gradient(orig,noisy,rec,par)
+        print(f'\ngrad: {g}')
