@@ -1,6 +1,8 @@
 import numpy as np
 import pylops, pyproximal
 
+from Operators.operators import ActiveOp, InactiveOp
+
 def scalar_data_adjoint(original,reconstruction,data_parameter,show=False):
     nx,ny = original.shape
     n = nx*ny
@@ -8,9 +10,11 @@ def scalar_data_adjoint(original,reconstruction,data_parameter,show=False):
     L = pylops.Diagonal(data_parameter * np.ones(n))
     Id = pylops.Identity(2*n)
     Z = pylops.Zero(n)
-    A = pylops.Block([[L,-K.adjoint()],[K,Id]])
-    b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
-    p = pylops.optimization.solver.cgls(A,b,np.zeros_like(b))
+    Act = ActiveOp(reconstruction)
+    Inact = InactiveOp(reconstruction)
+    A = pylops.Block([[L,K.adjoint()],[Act*K-Inact*K,Inact]])
+    b = np.concatenate((-reconstruction.ravel()+original.ravel(),np.zeros(2*n)),axis=0)
+    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b))
     if show==True:
         print(p[1:])
     return p[0][:n]
