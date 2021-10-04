@@ -26,5 +26,8 @@ def scalar_data_gradient(original,noisy,reconstruction,data_parameter):
     grad = np.dot(p,reconstruction.ravel()-noisy.ravel())
     return grad
 
-def scalar_data_gradient_ds(ds_denoised):
-    pass
+def scalar_data_gradient_ds(ds_denoised,data_parameter):
+    grad = 0
+    for img in ds_denoised.keys():
+        grad += scalar_data_gradient(ds_denoised[img][0],ds_denoised[img][1],ds_denoised[img][2],data_parameter)
+    return grad/len(ds_denoised)
