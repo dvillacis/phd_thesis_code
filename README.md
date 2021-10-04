@@ -13,22 +13,22 @@ $ pip install pylops pyproximal
 ### Scalar
 ```bash
 $ conda activate bilevel
-$ python data_learning.py datasets/cameraman.ds -t scalar
+$ python data_learning.py datasets/cameraman.ds -t scalar -i 15
 ```
 ### Patch
 ```bash
 $ conda activate bilevel
-$ python data_learning.py datasets/cameraman.ds -t patch -s 4
+$ python data_learning.py datasets/cameraman.ds -t patch -s 4 -i 15
 ```
 
 ## Learning Regularization Parameter
 ### Scalar
 ```bash
 $ conda activate bilevel
-$ python regularization_learning.py datasets/cameraman.ds -t scalar
+$ python regularization_learning.py datasets/cameraman.ds -t scalar -i 0.1
 ```
 ### Patch
 ```bash
 $ conda activate bilevel
-$ python regularization_learning.py datasets/cameraman.ds -t patch -s 4
+$ python regularization_learning.py datasets/cameraman.ds -t patch -s 4 -i 0.1
 ```
