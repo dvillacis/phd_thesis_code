@@ -3,29 +3,43 @@ import os
 import sys
 
 from Learning.optimization import find_optimal_data_scalar
+from Report.output_report import write_scalar_report
 
 parser = argparse.ArgumentParser(prog='bilevel_data_learning',description='Bilevel Data Parameter Learning',epilog='Enjoy!')
 
 parser.add_argument('Dataset',metavar='dataset_file',type=str,help='Path to dataset file')
 parser.add_argument('-t','--type',metavar='parameter_type',type=str,help='Parameter type scalar/patch')
 parser.add_argument('-i','--init',metavar='parameter_init',type=float,help='Parameter initial value scalar/patch')
+parser.add_argument('-o','--output',metavar='output_report_dir',type=str,help='Directory for storing output report')
+parser.add_argument('-v','--verbose',action='store_true',help='Verbosity level on optimization')
 
 args = parser.parse_args()
 
 dataset_file = args.Dataset
 parameter_type = 'scalar'
 paramater_initial_value = 10.0
+show = False
+report_dir = None
 if args.type != None:
     parameter_type = args.type
 if args.init != None:
     paramater_initial_value = args.init
+if args.verbose != None:
+    show=True
+if args.output != None:
+    report_dir = args.output
 
 if not os.path.isfile(dataset_file):
     raise ValueError(f'Dataset file: {dataset_file} not found...')
 
 if parameter_type == 'scalar':
-    optimal = find_optimal_data_scalar(dataset_file,paramater_initial_value)
+    optimal,optimal_ds = find_optimal_data_scalar(dataset_file,paramater_initial_value,show=show)
     print(f'Optimal parameter found:\n{optimal}')
+    if report_dir != None:
+        if not os.path.isdir(report_dir):
+            os.makedirs(report_dir)
+            print(f'Directory {report_dir} created succesfully...')
+        write_scalar_report(report_dir,optimal,optimal_ds)
 else:
     print(f'Parameter of type {parameter_type} is not implemented yet...')
 
