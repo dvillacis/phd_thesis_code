@@ -13,22 +13,32 @@ $ pip install pylops pyproximal
 ### Scalar
 ```bash
 $ conda activate bilevel
-$ python data_learning.py datasets/cameraman.ds -t scalar -i 15
+$ python data_learning.py datasets/cameraman_128_5/filelist.txt -t scalar -i 15
 ```
 ### Patch
 ```bash
 $ conda activate bilevel
-$ python data_learning.py datasets/cameraman.ds -t patch -s 4 -i 15
+$ python data_learning.py datasets/cameraman_128_5/filelist.txt -t patch -s 4 -i 15
 ```
 
 ## Learning Regularization Parameter
 ### Scalar
 ```bash
 $ conda activate bilevel
-$ python regularization_learning.py datasets/cameraman.ds -t scalar -i 0.1
+$ python regularization_learning.py datasets/cameraman_128_5/filelist.txt -t scalar -i 0.1
 ```
 ### Patch
 ```bash
 $ conda activate bilevel
-$ python regularization_learning.py datasets/cameraman.ds -t patch -s 4 -i 0.1
+$ python regularization_learning.py datasets/cameraman_128_5/filelist.txt -t patch -s 4 -i 0.1
+```
+
+## Optional Parameters
+1. -o/--output: Directory where to store the results
+2. -v/--verbose: Print evolution of iterations of the bilevel solver
+2. -i/--init: Initial value for the parameter
+
+### Example
+```bash
+$ python data_learning.py datasets/cameraman_128_5/filelist.txt -t scalar -i 10 -o output/cameraman_128_5/10/ -v
 ```
