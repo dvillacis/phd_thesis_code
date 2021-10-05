@@ -19,4 +19,4 @@ def find_optimal_data_scalar(dsfile,initial_data_parameter,show=False):
     if show == True:
         print(optimal)
     optimal_ds = denoise_ds(dsfile,data_parameter=optimal.x,reg_parameter=1.0)
-    return optimal.x,optimal_ds
+    return optimal,optimal_ds

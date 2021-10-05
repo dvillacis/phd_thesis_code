@@ -24,7 +24,7 @@ if args.type != None:
     parameter_type = args.type
 if args.init != None:
     paramater_initial_value = args.init
-if args.verbose != None:
+if args.verbose == True:
     show=True
 if args.output != None:
     report_dir = args.output
@@ -34,7 +34,10 @@ if not os.path.isfile(dataset_file):
 
 if parameter_type == 'scalar':
     optimal,optimal_ds = find_optimal_data_scalar(dataset_file,paramater_initial_value,show=show)
-    print(f'Optimal parameter found:\n{optimal}')
+    if optimal.success == True:
+        print(f'Optimal parameter found:\n{optimal.x}')
+    else:
+        print(f'{optimal.message}')
     if report_dir != None:
         if not os.path.isdir(report_dir):
             os.makedirs(report_dir)
