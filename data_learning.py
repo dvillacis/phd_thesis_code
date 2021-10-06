@@ -2,8 +2,8 @@ import argparse
 import os
 import sys
 
-from Learning.optimization import find_optimal_data_scalar
-from Report.output_report import write_scalar_report
+from Learning.optimization import find_optimal_data_scalar, find_optimal_data_patch
+from Report.output_report import write_scalar_report, write_patch_report
 
 parser = argparse.ArgumentParser(prog='bilevel_data_learning',description='Bilevel Data Parameter Learning',epilog='Enjoy!')
 
@@ -44,6 +44,15 @@ if parameter_type == 'scalar':
             print(f'Directory {report_dir} created succesfully...')
         write_scalar_report(report_dir,optimal,optimal_ds)
 else:
-    print(f'Parameter of type {parameter_type} is not implemented yet...')
+    optimal,optimal_ds = find_optimal_data_patch(dataset_file,paramater_initial_value,show=show)
+    if optimal.success == True:
+        print(f'Optimal parameter found:\n{optimal.x}')
+    else:
+        print(f'{optimal.message}')
+    if report_dir != None:
+        if not os.path.isdir(report_dir):
+            os.makedirs(report_dir)
+            print(f'Directory {report_dir} created succesfully...')
+        write_patch_report(report_dir,optimal,optimal_ds)
 
 

@@ -6,9 +6,9 @@ from Dataset.load_dataset import load_ds_file
 from Operators.SDL2 import SDL2
 from Operators.SDL21 import SDL21
 
-def denoise(noisy,data_parameter:np.ndarray,reg_parameter:np.ndarray,niter=100,show=False):
-    if data_parameter.shape != noisy.shape or reg_parameter.shape != noisy.shape:
-        raise ValueError('Patch parameter must be a numpy array with the same size as the input image...')
+def patch_denoise(noisy,data_parameter:np.ndarray,reg_parameter:np.ndarray,niter=100,show=False):
+    # if data_parameter.shape != noisy.shape or reg_parameter.shape != noisy.shape:
+    #     raise ValueError('Patch parameter must be a numpy array with the same size as the input image...')
     nx,ny = noisy.shape
     K = pylops.Gradient(dims=(nx,ny),kind='forward')
     l2 = SDL2(noisy.ravel(),sigma=data_parameter.ravel())
@@ -19,7 +19,7 @@ def denoise(noisy,data_parameter:np.ndarray,reg_parameter:np.ndarray,niter=100,s
     img = pyproximal.optimization.primaldual.PrimalDual(l2,l21,K,np.zeros_like(noisy.ravel()),tau,mu,niter=niter,show=show)
     return np.reshape(img,noisy.shape)
 
-def denoise_ds(dsfile,data_parameter:np.ndarray,reg_parameter:np.ndarray,niter=100,show=False):
+def patch_denoise_ds(dsfile,data_parameter:np.ndarray,reg_parameter:np.ndarray,niter=100,show=False):
     ds = load_ds_file(dsfile)
     reconstruction = {}
     for img in ds.keys():
@@ -27,6 +27,6 @@ def denoise_ds(dsfile,data_parameter:np.ndarray,reg_parameter:np.ndarray,niter=1
         original = original / np.max(original)
         noisy = np.array(Image.open(ds[img].strip()))
         noisy = noisy / np.max(noisy)
-        rec = denoise(noisy,data_parameter,reg_parameter,niter=niter,show=show)
+        rec = patch_denoise(noisy,data_parameter,reg_parameter,niter=niter,show=show)
         reconstruction.update({img:(original,noisy,rec)})
     return reconstruction
