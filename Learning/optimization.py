@@ -44,7 +44,7 @@ def find_optimal_data_patch(dsfile,initial_data_parameter,show=False):
     iprint = -1
     if show == True:
         iprint = 100
-    bnds = scipy.optimize.Bounds(np.ones(initial_data_parameter.ravel().shape),[np.inf]*len(initial_data_parameter.ravel()))
+    bnds = scipy.optimize.Bounds(0.1*np.ones(initial_data_parameter.ravel().shape),[np.inf]*len(initial_data_parameter.ravel()))
     optimal = scipy.optimize.minimize(fun=lambda x: data_cost_fn_patch(dsfile,x),jac=lambda x:data_gradient_fn_patch(dsfile,x),x0=initial_data_parameter.ravel(),method='L-BFGS-B',bounds=bnds,options={'iprint':iprint})
     if show == True:
         print(optimal)

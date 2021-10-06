@@ -20,6 +20,7 @@ args = parser.parse_args()
 dataset_file = args.Dataset
 parameter_type = 'scalar'
 paramater_initial_value = 10.0
+patch_size = 4
 show = False
 report_dir = None
 if args.type != None:
@@ -30,6 +31,8 @@ if args.verbose == True:
     show=True
 if args.output != None:
     report_dir = args.output
+if args.patch_size != None:
+    patch_size = args.patch_size
 
 if not os.path.isfile(dataset_file):
     raise ValueError(f'Dataset file: {dataset_file} not found...')
@@ -46,7 +49,7 @@ if parameter_type == 'scalar':
             print(f'Directory {report_dir} created succesfully...')
         write_scalar_report(report_dir,optimal,optimal_ds)
 else:
-    paramater_initial_value = paramater_initial_value * np.ones((4,4))
+    paramater_initial_value = paramater_initial_value * np.ones((patch_size,patch_size))
     optimal,optimal_ds = find_optimal_data_patch(dataset_file,paramater_initial_value,show=show)
     if optimal.success == True:
         print(f'Optimal parameter found:\n{optimal.x}')

@@ -45,7 +45,7 @@ def write_patch_report(report_dir,optimal,optimal_ds):
             noisy = optimal_ds[k][1]
             rec = optimal_ds[k][2]
             x_img = patch(optimal.x,original)
-            x_img = (optimal.x.reshape(original.shape))/np.max(optimal.x)
+            x_img = (x_img.reshape(original.shape))/np.max(x_img)
             l2_noisy = l2_cost(original,noisy)
             l2_rec = l2_cost(original,rec)
             psnr_noisy = psnr(original,noisy)

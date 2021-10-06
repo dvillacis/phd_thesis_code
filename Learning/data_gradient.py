@@ -40,7 +40,7 @@ def patch_data_adjoint(original,reconstruction,data_parameter:np.ndarray,show=Fa
     nx,ny = original.shape
     n = nx*ny
     K = pylops.Gradient(dims=(nx,ny),kind='forward')
-    L = pylops.Diagonal(data_parameter.ravel())
+    L = pylops.Diagonal(data_parameter)
     Id = pylops.Identity(2*n)
     Z = pylops.Zero(n)
     Act = ActiveOp(reconstruction)
@@ -57,7 +57,7 @@ def patch_data_gradient(original,noisy,reconstruction,data_parameter:np.ndarray)
     L = pylops.Diagonal(p)
     grad = L*(reconstruction.ravel()-noisy.ravel())
     grad = reverse_patch(grad,data_parameter)
-    return grad.ravel()
+    return grad
 
 def patch_data_gradient_ds(ds_denoised,data_parameter):
     grad = 0
