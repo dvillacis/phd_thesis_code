@@ -5,6 +5,7 @@ from PIL import Image
 from skimage.metrics import structural_similarity as ssim
 from skimage.metrics import peak_signal_noise_ratio as psnr
 from Learning.cost import l2_cost
+from Operators.patch import patch
 
 def write_scalar_report(report_dir,optimal,optimal_ds):
     with open(os.path.join(report_dir,'summary.out'),'w') as s:
@@ -43,6 +44,7 @@ def write_patch_report(report_dir,optimal,optimal_ds):
             original = optimal_ds[k][0]
             noisy = optimal_ds[k][1]
             rec = optimal_ds[k][2]
+            x_img = patch(optimal.x,original)
             x_img = (optimal.x.reshape(original.shape))/np.max(optimal.x)
             l2_noisy = l2_cost(original,noisy)
             l2_rec = l2_cost(original,rec)

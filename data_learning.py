@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import numpy as np
 
 from Learning.optimization import find_optimal_data_scalar, find_optimal_data_patch
 from Report.output_report import write_scalar_report, write_patch_report
@@ -9,6 +10,7 @@ parser = argparse.ArgumentParser(prog='bilevel_data_learning',description='Bilev
 
 parser.add_argument('Dataset',metavar='dataset_file',type=str,help='Path to dataset file')
 parser.add_argument('-t','--type',metavar='parameter_type',type=str,help='Parameter type scalar/patch')
+parser.add_argument('-ps','--patch_size',metavar='patch_size',type=int,help='Patch parameter size')
 parser.add_argument('-i','--init',metavar='parameter_init',type=float,help='Parameter initial value scalar/patch')
 parser.add_argument('-o','--output',metavar='output_report_dir',type=str,help='Directory for storing output report')
 parser.add_argument('-v','--verbose',action='store_true',help='Verbosity level on optimization')
@@ -44,6 +46,7 @@ if parameter_type == 'scalar':
             print(f'Directory {report_dir} created succesfully...')
         write_scalar_report(report_dir,optimal,optimal_ds)
 else:
+    paramater_initial_value = paramater_initial_value * np.ones((4,4))
     optimal,optimal_ds = find_optimal_data_patch(dataset_file,paramater_initial_value,show=show)
     if optimal.success == True:
         print(f'Optimal parameter found:\n{optimal.x}')

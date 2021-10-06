@@ -5,11 +5,13 @@ from PIL import Image
 from Dataset.load_dataset import load_ds_file
 from Operators.SDL2 import SDL2
 from Operators.SDL21 import SDL21
+from Operators.patch import patch
 
 def patch_denoise(noisy,data_parameter:np.ndarray,reg_parameter:np.ndarray,niter=100,show=False):
-    # if data_parameter.shape != noisy.shape or reg_parameter.shape != noisy.shape:
-    #     raise ValueError('Patch parameter must be a numpy array with the same size as the input image...')
     nx,ny = noisy.shape
+    data_parameter = patch(data_parameter,noisy)
+    reg_parameter = patch(reg_parameter,noisy)
+    
     K = pylops.Gradient(dims=(nx,ny),kind='forward')
     l2 = SDL2(noisy.ravel(),sigma=data_parameter.ravel())
     l21 = SDL21(ndim=2,sigma=reg_parameter.ravel())
