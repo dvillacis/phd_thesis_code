@@ -18,7 +18,7 @@ $ python data_learning.py datasets/cameraman_128_5/filelist.txt -t scalar -i 15
 ### Patch
 ```bash
 $ conda activate bilevel
-$ python data_learning.py datasets/cameraman_128_5/filelist.txt -t patch -s 4 -i 15
+$ python data_learning.py datasets/cameraman_128_5/filelist.txt -t patch -ps 4 -i 15
 ```
 
 ## Learning Regularization Parameter
@@ -30,13 +30,14 @@ $ python regularization_learning.py datasets/cameraman_128_5/filelist.txt -t sca
 ### Patch
 ```bash
 $ conda activate bilevel
-$ python regularization_learning.py datasets/cameraman_128_5/filelist.txt -t patch -s 4 -i 0.1
+$ python regularization_learning.py datasets/cameraman_128_5/filelist.txt -t patch -ps 4 -i 0.1
 ```
 
 ## Optional Parameters
 1. -o/--output: Directory where to store the results
 2. -v/--verbose: Print evolution of iterations of the bilevel solver
-2. -i/--init: Initial value for the parameter
+3. -i/--init: Initial value for the parameter
+4. -ps/--patch_size: Patch size of the parameter
 
 ### Example
 ```bash
