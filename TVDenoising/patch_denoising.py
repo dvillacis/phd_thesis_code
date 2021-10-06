@@ -1,22 +1,25 @@
-
 import numpy as np
-from PIL import Image
 import pylops, pyproximal
+from PIL import Image
 
 from Dataset.load_dataset import load_ds_file
+from Operators.SDL2 import SDL2
+from Operators.SDL21 import SDL21
 
-def denoise(noisy,data_parameter,reg_parameter,niter=100,show=False):
+def denoise(noisy,data_parameter:np.ndarray,reg_parameter:np.ndarray,niter=100,show=False):
+    if data_parameter.shape != noisy.shape or reg_parameter.shape != noisy.shape:
+        raise ValueError('Patch parameter must be a numpy array with the same size as the input image...')
     nx,ny = noisy.shape
     K = pylops.Gradient(dims=(nx,ny),kind='forward')
-    l2 = pyproximal.L2(b=noisy.ravel(),sigma=data_parameter)
-    l21 = pyproximal.L21(ndim=2,sigma=reg_parameter)
+    l2 = SDL2(noisy.ravel(),sigma=data_parameter.ravel())
+    l21 = SDL21(ndim=2,sigma=reg_parameter.ravel())
     L = 8.0 # TODO: Estimar mejor los parametros de cp
     tau = 1.0/np.sqrt(L)
     mu = 1.0/np.sqrt(L)
     img = pyproximal.optimization.primaldual.PrimalDual(l2,l21,K,np.zeros_like(noisy.ravel()),tau,mu,niter=niter,show=show)
     return np.reshape(img,noisy.shape)
 
-def denoise_ds(dsfile,data_parameter,reg_parameter,niter=100,show=False):
+def denoise_ds(dsfile,data_parameter:np.ndarray,reg_parameter:np.ndarray,niter=100,show=False):
     ds = load_ds_file(dsfile)
     reconstruction = {}
     for img in ds.keys():

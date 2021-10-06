@@ -1,7 +1,12 @@
+import numpy as np
 import scipy
 from Learning.cost import l2_cost_ds
 from TVDenoising.scalar_denoising import denoise_ds
 from Learning.data_gradient import scalar_data_gradient_ds
+
+#################################
+# SCALAR DATA PARAMETER LEARNING
+#################################
 
 def data_cost_fn_scalar(dsfile,data_parameter):
     den_ds = denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=1.0)
@@ -20,3 +25,13 @@ def find_optimal_data_scalar(dsfile,initial_data_parameter,show=False):
         print(optimal)
     optimal_ds = denoise_ds(dsfile,data_parameter=optimal.x,reg_parameter=1.0)
     return optimal,optimal_ds
+
+#################################
+# PATCH DATA PARAMETER LEARNING
+#################################
+
+def data_cost_fn_patch(dsfile,data_parameter:np.array):
+    pass
+
+def find_optimal_data_patch(dsfile,initial_data_parameter:np.array,show=False):
+    pass
