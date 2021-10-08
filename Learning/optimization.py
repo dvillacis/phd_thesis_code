@@ -28,6 +28,28 @@ def find_optimal_data_scalar(dsfile,initial_data_parameter,show=False):
     return optimal,optimal_ds
 
 #################################
+# SCALAR REGULARIZATION PARAMETER LEARNING
+#################################
+
+def reg_cost_fn_scalar(dsfile,reg_parameter):
+    den_ds = denoise_ds(dsfile,data_parameter=1.0,reg_parameter=reg_parameter,niter=1000)
+    return l2_cost_ds(den_ds)
+
+def reg_gradient_fn_scalar(dsfile,reg_parameter):
+    den_ds = denoise_ds(dsfile,data_parameter=1.0,reg_parameter=reg_parameter,niter=1000)
+    return scalar_reg_gradient_ds(den_ds,reg_parameter)
+
+def find_optimal_reg_scalar(dsfile,initial_reg_parameter,show=False):
+    iprint = -1
+    if show == True:
+        iprint = 100
+    optimal = scipy.optimize.minimize(fun=lambda x: reg_cost_fn_scalar(dsfile,x),jac=lambda x:reg_gradient_fn_scalar(dsfile,x),x0=initial_reg_parameter,method='L-BFGS-B',options={'iprint':iprint})
+    if show == True:
+        print(optimal)
+    optimal_ds = denoise_ds(dsfile,data_parameter=1.0,reg_parameter=optimal.x)
+    return optimal,optimal_ds
+
+#################################
 # PATCH DATA PARAMETER LEARNING
 #################################
 
