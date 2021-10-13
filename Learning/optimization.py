@@ -19,10 +19,11 @@ def data_gradient_fn_scalar(dsfile,data_parameter):
     return scalar_data_gradient_ds(den_ds,data_parameter)
 
 def find_optimal_data_scalar(dsfile,initial_data_parameter,show=False):
-    iprint = -1
+    iprint = 0
     if show == True:
-        iprint = 100
-    optimal = scipy.optimize.minimize(fun=lambda x: data_cost_fn_scalar(dsfile,x),jac=lambda x:data_gradient_fn_scalar(dsfile,x),x0=initial_data_parameter,method='L-BFGS-B',options={'iprint':iprint})
+        iprint = 3
+    bnds = scipy.optimize.Bounds(0.001,np.inf)
+    optimal = scipy.optimize.minimize(fun=lambda x: data_cost_fn_scalar(dsfile,x),jac=lambda x:data_gradient_fn_scalar(dsfile,x),x0=initial_data_parameter,method='trust-constr',bounds=bnds,options={'verbose':iprint})
     if show == True:
         print(optimal)
     optimal_ds = denoise_ds(dsfile,data_parameter=optimal.x,reg_parameter=1.0)
@@ -64,11 +65,11 @@ def data_gradient_fn_patch(dsfile,data_parameter:np.ndarray):
     return grad
 
 def find_optimal_data_patch(dsfile,initial_data_parameter,show=False):
-    iprint = -1
+    iprint = 0
     if show == True:
-        iprint = 100
-    bnds = scipy.optimize.Bounds(0.1*np.ones(initial_data_parameter.ravel().shape),[np.inf]*len(initial_data_parameter.ravel()))
-    optimal = scipy.optimize.minimize(fun=lambda x: data_cost_fn_patch(dsfile,x),jac=lambda x:data_gradient_fn_patch(dsfile,x),x0=initial_data_parameter.ravel(),method='L-BFGS-B',bounds=bnds,options={'iprint':iprint})
+        iprint = 3
+    bnds = scipy.optimize.Bounds(0.001*np.ones(initial_data_parameter.ravel().shape),[np.inf]*len(initial_data_parameter.ravel()))
+    optimal = scipy.optimize.minimize(fun=lambda x: data_cost_fn_patch(dsfile,x),jac=lambda x:data_gradient_fn_patch(dsfile,x),x0=initial_data_parameter.ravel(),method='trust-constr',bounds=bnds,options={'verbose':iprint})
     if show == True:
         print(optimal)
     x = optimal.x
