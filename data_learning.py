@@ -46,7 +46,7 @@ if parameter_type == 'scalar':
     if report_dir != None:
         if not os.path.isdir(report_dir):
             os.makedirs(report_dir)
-            print(f'Directory {report_dir} created succesfully...')
+            print(f'Directory {report_dir} created successfully...')
         write_scalar_report(report_dir,optimal,optimal_ds)
 else:
     paramater_initial_value = paramater_initial_value * np.ones((patch_size,patch_size))
@@ -58,7 +58,7 @@ else:
     if report_dir != None:
         if not os.path.isdir(report_dir):
             os.makedirs(report_dir)
-            print(f'Directory {report_dir} created succesfully...')
+            print(f'Directory {report_dir} created successfully...')
         write_patch_report(report_dir,optimal,optimal_ds)
 
 

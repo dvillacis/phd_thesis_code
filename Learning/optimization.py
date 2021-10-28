@@ -11,11 +11,11 @@ from Learning.reg_gradient import scalar_reg_gradient_ds
 #################################
 
 def data_cost_fn_scalar(dsfile,data_parameter):
-    den_ds = denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=1.0,niter=1000)
+    den_ds = denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=1.0,niter=100)
     return l2_cost_ds(den_ds)
 
 def data_gradient_fn_scalar(dsfile,data_parameter):
-    den_ds = denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=1.0,niter=1000)
+    den_ds = denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=1.0,niter=100)
     return scalar_data_gradient_ds(den_ds,data_parameter)
 
 def find_optimal_data_scalar(dsfile,initial_data_parameter,show=False):
@@ -23,7 +23,7 @@ def find_optimal_data_scalar(dsfile,initial_data_parameter,show=False):
     if show == True:
         iprint = 3
     bnds = scipy.optimize.Bounds(0.001,np.inf)
-    optimal = scipy.optimize.minimize(fun=lambda x: data_cost_fn_scalar(dsfile,x),jac=lambda x:data_gradient_fn_scalar(dsfile,x),x0=initial_data_parameter,method='trust-constr',bounds=bnds,options={'verbose':iprint})
+    optimal = scipy.optimize.minimize(fun=lambda x: data_cost_fn_scalar(dsfile,x),hess=scipy.optimize.SR1(),jac=lambda x:data_gradient_fn_scalar(dsfile,x),x0=initial_data_parameter,method='trust-constr',bounds=bnds,options={'verbose':iprint})
     if show == True:
         print(optimal)
     optimal_ds = denoise_ds(dsfile,data_parameter=optimal.x,reg_parameter=1.0)

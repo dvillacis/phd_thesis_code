@@ -4,6 +4,8 @@ import pylops, pyproximal
 from Operators.operators import ActiveOp, InactiveOp
 from Operators.patch import patch, reverse_patch
 
+# DATA GRADIENT
+
 def scalar_data_adjoint(original,reconstruction,data_parameter,show=False):
     nx,ny = original.shape
     n = nx*ny
@@ -33,8 +35,27 @@ def scalar_data_gradient_ds(ds_denoised,data_parameter):
         grad += scalar_data_gradient(ds_denoised[img][0],ds_denoised[img][1],ds_denoised[img][2],data_parameter)
     return grad/len(ds_denoised)
 
+# SMOOTH DATA GRADIENT
+
+def smooth_scalar_data_adjoint(original,reconstruction,data_parameter,show=False):
+    nx,ny = original.shape
+    n = nx*ny
+    K = pylops.Gradient(dims=(nx,ny),kind='forward')
+    L = pylops.Diagonal(data_parameter * np.ones(n))
+    Id = pylops.Identity(2*n)
+    Z = pylops.Zero(n)
+    Act = ActiveOp(reconstruction)
+    Inact = InactiveOp(reconstruction)
+    A = pylops.Block([[L,K.adjoint()],[Act*K-Inact*K,Inact]])
+    b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
+    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b))
+    if show==True:
+        print(p[1:])
+    return p[0][:n]
+
 
 # PATCH
+
 def patch_data_adjoint(original,reconstruction,data_parameter:np.ndarray,show=False):
     data_parameter = patch(data_parameter,original)
     nx,ny = original.shape

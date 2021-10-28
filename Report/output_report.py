@@ -33,8 +33,9 @@ def write_scalar_report(report_dir,optimal,optimal_ds):
 
 def write_patch_report(report_dir,optimal,optimal_ds):
     with open(os.path.join(report_dir,'summary.out'),'w') as s:
-        s.write(f'fun:{optimal.fun}\nmessage:{optimal.message}\nnfev:{optimal.nfev}\nnit:{optimal.nit}\nstatus:{optimal.status}\nsuccess:{optimal.success}')
-
+        #s.write(f'fun:{optimal.fun}\nmessage:{optimal.message}\nnfev:{optimal.nfev}\nnit:{optimal.nit}\nstatus:{optimal.status}\nsuccess:{optimal.success}')
+        s.write(f'{optimal}')
+        
     with open(os.path.join(report_dir,'quality.out'),'w') as q:
         q.write(f'optimal data parameter: {optimal.x}\n')
         q.write('img_num\tl2_noisy\tl2_rec\tpsnr_noisy\tpsnr_rec\tssim_noisy\tssim_rec\n')
