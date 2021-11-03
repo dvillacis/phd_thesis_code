@@ -49,12 +49,14 @@ def smooth_scalar_data_adjoint(original,reconstruction,data_parameter,show=False
     A = pylops.Block([[L,K.adjoint()],[-Tg,Id]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
     p = pylops.optimization.solver.cg(A,b,np.zeros_like(b))
+    print(f'res:{np.linalg.norm(A*p[0]-b)}')
     if show==True:
         print(p[1:])
     return p[0][:n]
 
-def smooth_scalar_data_gradient(original,noisy,reconstruction,data_parameter):
-    p = smooth_scalar_data_adjoint(original,reconstruction,data_parameter)
+def smooth_scalar_data_gradient(original,noisy,reconstruction,data_parameter,show=False):
+    p = smooth_scalar_data_adjoint(original,reconstruction,data_parameter,show=show)
+    print(np.linalg.norm(p))
     #L = pylops.Diagonal(p[0])
     #grad = L*(reconstruction.ravel()-noisy.ravel())
     grad = -np.dot(p,reconstruction.ravel()-noisy.ravel())
@@ -75,7 +77,7 @@ def patch_data_adjoint(original,reconstruction,data_parameter:np.ndarray,show=Fa
     Inact = InactiveOp(reconstruction)
     A = pylops.Block([[L,K.adjoint()],[Act*K-Inact*K,Inact]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
-    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b))
+    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=len(data_parameter))
     if show==True:
         print(p[1:])
     return p[0][:n]

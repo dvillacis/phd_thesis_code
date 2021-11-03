@@ -1,9 +1,11 @@
 import numpy as np
-import pylops, pyproximal
+import pylops
+from pylops import FirstDerivative
 
 from Operators.operators import ActiveOp, InactiveOp
 from Operators.patch import patch, reverse_patch
 from Operators.norms import pointwise_euclidean_norm
+from Operators.Tgamma import Tgamma
 
 def scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False):
     nx,ny = original.shape
@@ -36,6 +38,41 @@ def scalar_reg_gradient_ds(ds_denoised,reg_parameter):
         grad += scalar_reg_gradient(ds_denoised[img][0],ds_denoised[img][1],ds_denoised[img][2],reg_parameter)
     return grad/len(ds_denoised)
 
+# SMOOTH SCALAR
+def smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False):
+    nx,ny = original.shape
+    n = nx*ny
+    K = pylops.Gradient(dims=(nx,ny),kind='forward')
+    L = pylops.Diagonal(reg_parameter * np.ones(2*n))
+    Id = pylops.Identity(2*n)
+    Idn = pylops.Identity(n)
+    Z = pylops.Zero(n)
+    Tg = Tgamma(reconstruction.ravel())
+    A = pylops.Block([[10*Idn,K.adjoint()],[-L*Tg,10*Id]])
+    b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
+    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b))
+    print(f'res:{np.linalg.norm(A*p[0]-b)}')
+    if show==True:
+        print(p[1:])
+    return p[0][:n]
+
+def smooth_scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,gamma=1e-10,show=False):
+    nx,ny = original.shape
+    n = nx*ny
+    p = smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=show)
+    Kx = FirstDerivative(n,kind='centered',dir=0,edge=True)
+    Ky = FirstDerivative(n,kind='centered',dir=1,edge=True)
+    Kxu = Kx*reconstruction.ravel()
+    Kyu = Ky*reconstruction.ravel()
+    Kxp = Kx*p
+    Kyp = Ky*p
+    nKu = np.linalg.norm(np.vstack((Kxu,Kyu)).T,axis=1)
+    mul = np.where(nKu<gamma,nKu/(2*gamma**2)-2/gamma,1/nKu)
+    hx = mul*Kxu
+    hy = mul*Kyu
+    #grad = L*(reconstruction.ravel()-noisy.ravel())
+    grad = -np.sum(hx*Kxp + hy*Kyp)
+    return grad
 
 # PATCH
 def patch_reg_adjoint(original,reconstruction,reg_parameter:np.ndarray,show=False):
