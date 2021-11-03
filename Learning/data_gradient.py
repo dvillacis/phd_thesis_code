@@ -1,5 +1,6 @@
 import numpy as np
 import pylops, pyproximal
+from Operators.Tgamma import Tgamma
 
 from Operators.operators import ActiveOp, InactiveOp
 from Operators.patch import patch, reverse_patch
@@ -44,14 +45,20 @@ def smooth_scalar_data_adjoint(original,reconstruction,data_parameter,show=False
     L = pylops.Diagonal(data_parameter * np.ones(n))
     Id = pylops.Identity(2*n)
     Z = pylops.Zero(n)
-    Act = ActiveOp(reconstruction)
-    Inact = InactiveOp(reconstruction)
-    A = pylops.Block([[L,K.adjoint()],[Act*K-Inact*K,Inact]])
+    Tg = Tgamma(reconstruction.ravel())
+    A = pylops.Block([[L,K.adjoint()],[-Tg,Id]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
     p = pylops.optimization.solver.cg(A,b,np.zeros_like(b))
     if show==True:
         print(p[1:])
     return p[0][:n]
+
+def smooth_scalar_data_gradient(original,noisy,reconstruction,data_parameter):
+    p = smooth_scalar_data_adjoint(original,reconstruction,data_parameter)
+    #L = pylops.Diagonal(p[0])
+    #grad = L*(reconstruction.ravel()-noisy.ravel())
+    grad = -np.dot(p,reconstruction.ravel()-noisy.ravel())
+    return grad
 
 
 # PATCH
