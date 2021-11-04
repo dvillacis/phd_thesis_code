@@ -43,20 +43,20 @@ def smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False):
     nx,ny = original.shape
     n = nx*ny
     K = pylops.Gradient(dims=(nx,ny),kind='forward')
-    L = pylops.Diagonal(reg_parameter * np.ones(2*n))
+    L = pylops.Diagonal((1/reg_parameter) * np.ones(2*n))
     Id = pylops.Identity(2*n)
     Idn = pylops.Identity(n)
     Z = pylops.Zero(n)
     Tg = Tgamma(reconstruction.ravel())
-    A = pylops.Block([[10*Idn,K.adjoint()],[-L*Tg,10*Id]])
+    A = pylops.Block([[Idn,K.adjoint()],[-Tg,L]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
-    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b))
-    print(f'res:{np.linalg.norm(A*p[0]-b)}')
+    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=100)
     if show==True:
-        print(p[1:])
+        print(f'cg_out: {p[1:]}')
+        print(f'res:{np.linalg.norm(A*p[0]-b)}')
     return p[0][:n]
 
-def smooth_scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,gamma=1e-10,show=False):
+def smooth_scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,gamma=1e-4,show=False):
     nx,ny = original.shape
     n = nx*ny
     p = smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=show)

@@ -11,7 +11,7 @@ from Learning.reg_gradient import smooth_scalar_reg_gradient
 class TestGradient(unittest.TestCase):
     def test_smooth_scalar_data_gradient(self):
         orig,noisy = get_image_pair('datasets/cameraman_128_5/filelist.txt',0)
-        par = np.arange(1.0,120.0,step=1.0)
+        par = np.arange(20.0,90.0,step=1.0)
         grads=[]
         costs =[]
         for p in par:

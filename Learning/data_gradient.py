@@ -48,6 +48,7 @@ def smooth_scalar_data_adjoint(original,reconstruction,data_parameter,show=False
     Tg = Tgamma(reconstruction.ravel())
     A = pylops.Block([[L,K.adjoint()],[-Tg,Id]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
+    #print(f'cond:{A.cond()}')
     p = pylops.optimization.solver.cg(A,b,np.zeros_like(b))
     print(f'res:{np.linalg.norm(A*p[0]-b)}')
     if show==True:
