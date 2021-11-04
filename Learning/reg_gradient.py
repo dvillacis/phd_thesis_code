@@ -43,13 +43,14 @@ def smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False):
     nx,ny = original.shape
     n = nx*ny
     K = pylops.Gradient(dims=(nx,ny),kind='forward')
-    L = pylops.Diagonal((1/reg_parameter) * np.ones(2*n))
+    L = pylops.Diagonal((reg_parameter) * np.ones(2*n))
     Id = pylops.Identity(2*n)
     Idn = pylops.Identity(n)
     Z = pylops.Zero(n)
     Tg = Tgamma(reconstruction.ravel())
-    A = pylops.Block([[Idn,K.adjoint()],[-Tg,L]])
-    b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
+    precond = 1
+    A = pylops.Block([[precond*Idn,K.adjoint()],[-L*Tg,precond*Id]])
+    b = np.concatenate((precond*(reconstruction.ravel()-original.ravel()),np.zeros(2*n)),axis=0)
     p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=100)
     if show==True:
         print(f'cg_out: {p[1:]}')
