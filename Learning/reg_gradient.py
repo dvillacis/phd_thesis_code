@@ -16,24 +16,32 @@ def scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False):
     L = pylops.Diagonal(reg_parameter * np.ones(2*n))
     Id2 = pylops.Identity(2*n)
     Z = pylops.Zero(n)
-    #Act = ActiveOp(reconstruction)
+    Act = ActiveOp(reconstruction)
     T = TOp(reconstruction.ravel())
     Inact = InactiveOp(reconstruction)
-    A = pylops.Block([[Id,K.adjoint()],[T,Inact]])
+    A = pylops.Block([[Id,K.adjoint()],[-L*T,Inact + 100*Act]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
-    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=100)
+    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),tol=1e-4)
     if show==True:
         print(f'res:{np.linalg.norm(A*p[0]-b)}')
         print(f'cg_out: {p[1:]}')
     adj = p[0][:n]
-    Ku = Inact*K*reconstruction.ravel()
-    den = np.vstack([pointwise_euclidean_norm(Ku)]*2).ravel()
-    den[den==0]=0.01
-    Ku = Ku / den
-    return -np.dot(K*adj,Ku)
+    return adj
 
-def scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,show=False):
-    return scalar_reg_adjoint(original,reconstruction,reg_parameter,show=show)
+def scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,show=False,tol=1e-7):
+    nx,ny = original.shape
+    n = nx*ny
+    p = scalar_reg_adjoint(original,reconstruction,reg_parameter,show=show)
+    Kx = FirstDerivative(n,kind='centered',dir=0,edge=True)
+    Ky = FirstDerivative(n,kind='centered',dir=1,edge=True)
+    Kxu = Kx*reconstruction.ravel()
+    Kyu = Ky*reconstruction.ravel()
+    Kxp = Kx*p
+    Kyp = Ky*p
+    nKu = np.linalg.norm(np.vstack((Kxu,Kyu)).T,axis=1)
+    mul = np.where(nKu<tol,0,1/nKu)
+    grad = mul * (Kxu * Kxp + Kyu * Kyp)
+    return -np.sum(grad)
 
 def scalar_reg_gradient_ds(ds_denoised,reg_parameter):
     grad = 0

@@ -1,4 +1,5 @@
 import unittest
+import warnings
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -9,6 +10,7 @@ from Learning.reg_gradient import scalar_reg_gradient
 
 class TestGradient(unittest.TestCase):
     def test_smooth_scalar_reg_gradient(self):
+        warnings.filterwarnings('ignore')
         orig,noisy = get_image_pair('datasets/cameraman_128_5/filelist.txt',0)
         # np.random.seed(12347)
         # t = 12
@@ -21,7 +23,7 @@ class TestGradient(unittest.TestCase):
         # noisy = orig + noise_level * np.random.randn(t,t)
         # noisy = np.clip(noisy,0.0,1.0)
         
-        par = np.arange(0.008,0.03,step=0.001)
+        par = np.arange(1e-7,0.02,step=1e-3)
         grads=[]
         costs =[]
         for p in par:

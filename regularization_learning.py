@@ -1,9 +1,12 @@
 import argparse
+import warnings
 import os
 import sys
 import numpy as np
 
-from Learning.optimization import find_optimal_data_scalar, find_optimal_data_patch
+warnings.filterwarnings('ignore')
+
+from Learning.optimization import find_optimal_reg_scalar
 from Report.output_report import write_scalar_report, write_patch_report
 
 parser = argparse.ArgumentParser(prog='bilevel_regularization_learning',description='Bilevel Regularization Parameter Learning',epilog='Enjoy!')
@@ -49,16 +52,17 @@ if parameter_type == 'scalar':
             print(f'Directory {report_dir} created succesfully...')
         write_scalar_report(report_dir,optimal,optimal_ds)
 else:
-    paramater_initial_value = paramater_initial_value * np.ones((patch_size,patch_size))
-    optimal,optimal_ds = find_optimal_reg_patch(dataset_file,paramater_initial_value,show=show)
-    if optimal.success == True:
-        print(f'Optimal parameter found:\n{optimal.x}')
-    else:
-        print(f'{optimal.message}')
-    if report_dir != None:
-        if not os.path.isdir(report_dir):
-            os.makedirs(report_dir)
-            print(f'Directory {report_dir} created succesfully...')
-        write_patch_report(report_dir,optimal,optimal_ds)
+    # paramater_initial_value = paramater_initial_value * np.ones((patch_size,patch_size))
+    # optimal,optimal_ds = find_optimal_reg_patch(dataset_file,paramater_initial_value,show=show)
+    # if optimal.success == True:
+    #     print(f'Optimal parameter found:\n{optimal.x}')
+    # else:
+    #     print(f'{optimal.message}')
+    # if report_dir != None:
+    #     if not os.path.isdir(report_dir):
+    #         os.makedirs(report_dir)
+    #         print(f'Directory {report_dir} created succesfully...')
+    #     write_patch_report(report_dir,optimal,optimal_ds)
+    print('Not implemented')
 
 
