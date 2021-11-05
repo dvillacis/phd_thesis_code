@@ -3,6 +3,7 @@ import pylops, pyproximal
 from Operators.Tgamma import Tgamma
 
 from Operators.operators import ActiveOp, InactiveOp
+from Operators.TOp import TOp
 from Operators.patch import patch, reverse_patch
 
 # DATA GRADIENT
@@ -14,17 +15,19 @@ def scalar_data_adjoint(original,reconstruction,data_parameter,show=False):
     L = pylops.Diagonal(data_parameter * np.ones(n))
     Id = pylops.Identity(2*n)
     Z = pylops.Zero(n)
-    Act = ActiveOp(reconstruction)
+    #Act = ActiveOp(reconstruction)
+    T = TOp(reconstruction.ravel())
     Inact = InactiveOp(reconstruction)
-    A = pylops.Block([[L,K.adjoint()],[Act*K-Inact*K,Inact]])
+    A = pylops.Block([[L,K.adjoint()],[T,Inact]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
     p = pylops.optimization.solver.cg(A,b,np.zeros_like(b))
     if show==True:
-        print(p[1:])
+        print(f'res:{np.linalg.norm(A*p[0]-b)}')
+        print(f'cg_out: {p[1:]}')
     return p[0][:n]
 
-def scalar_data_gradient(original,noisy,reconstruction,data_parameter):
-    p = scalar_data_adjoint(original,reconstruction,data_parameter)
+def scalar_data_gradient(original,noisy,reconstruction,data_parameter,show=False):
+    p = scalar_data_adjoint(original,reconstruction,data_parameter,show=show)
     #L = pylops.Diagonal(p[0])
     #grad = L*(reconstruction.ravel()-noisy.ravel())
     grad = -np.dot(p,reconstruction.ravel()-noisy.ravel())
@@ -50,9 +53,9 @@ def smooth_scalar_data_adjoint(original,reconstruction,data_parameter,show=False
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
     #print(f'cond:{A.cond()}')
     p = pylops.optimization.solver.cg(A,b,np.zeros_like(b))
-    print(f'res:{np.linalg.norm(A*p[0]-b)}')
     if show==True:
-        print(p[1:])
+        print(f'res:{np.linalg.norm(A*p[0]-b)}')
+        print(f'cg_out: {p[1:]}')
     return p[0][:n]
 
 def smooth_scalar_data_gradient(original,noisy,reconstruction,data_parameter,show=False):

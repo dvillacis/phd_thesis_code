@@ -3,6 +3,7 @@ import pylops
 from pylops import FirstDerivative
 
 from Operators.operators import ActiveOp, InactiveOp
+from Operators.TOp import TOp
 from Operators.patch import patch, reverse_patch
 from Operators.norms import pointwise_euclidean_norm
 from Operators.Tgamma import Tgamma
@@ -15,13 +16,15 @@ def scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False):
     L = pylops.Diagonal(reg_parameter * np.ones(2*n))
     Id2 = pylops.Identity(2*n)
     Z = pylops.Zero(n)
-    Act = ActiveOp(reconstruction)
+    #Act = ActiveOp(reconstruction)
+    T = TOp(reconstruction.ravel())
     Inact = InactiveOp(reconstruction)
-    A = pylops.Block([[Id,K.adjoint()],[Act*K-L*Inact*K,Inact]])
+    A = pylops.Block([[Id,K.adjoint()],[T,Inact]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
-    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b))
+    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=100)
     if show==True:
-        print(p[1:])
+        print(f'res:{np.linalg.norm(A*p[0]-b)}')
+        print(f'cg_out: {p[1:]}')
     adj = p[0][:n]
     Ku = Inact*K*reconstruction.ravel()
     den = np.vstack([pointwise_euclidean_norm(Ku)]*2).ravel()
@@ -29,8 +32,8 @@ def scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False):
     Ku = Ku / den
     return -np.dot(K*adj,Ku)
 
-def scalar_reg_gradient(original,noisy,reconstruction,reg_parameter):
-    return scalar_reg_adjoint(original,reconstruction,reg_parameter)
+def scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,show=False):
+    return scalar_reg_adjoint(original,reconstruction,reg_parameter,show=show)
 
 def scalar_reg_gradient_ds(ds_denoised,reg_parameter):
     grad = 0
