@@ -23,7 +23,7 @@ class TestGradient(unittest.TestCase):
         # noisy = orig + noise_level * np.random.randn(t,t)
         # noisy = np.clip(noisy,0.0,1.0)
         
-        par = np.arange(1e-7,0.02,step=1e-3)
+        par = np.arange(1e-7,0.2,step=1e-2)
         grads=[]
         costs =[]
         for p in par:

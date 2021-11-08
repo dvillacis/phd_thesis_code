@@ -19,7 +19,7 @@ def scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False):
     Act = ActiveOp(reconstruction)
     T = TOp(reconstruction.ravel())
     Inact = InactiveOp(reconstruction)
-    A = pylops.Block([[Id,K.adjoint()],[-L*T,Inact + 100*Act]])
+    A = pylops.Block([[Id,K.adjoint()],[-L*T,Inact + 1*Act]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
     p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),tol=1e-4)
     if show==True:
@@ -92,22 +92,35 @@ def patch_reg_adjoint(original,reconstruction,reg_parameter:np.ndarray,show=Fals
     nx,ny = original.shape
     n = nx*ny
     K = pylops.Gradient(dims=(nx,ny),kind='forward')
-    L = pylops.Diagonal(reg_parameter)
-    Id = pylops.Identity(2*n)
+    Id = pylops.Identity(n)
+    L = pylops.Diagonal(np.concatenate((reg_parameter,reg_parameter)))
+    Id2 = pylops.Identity(2*n)
     Z = pylops.Zero(n)
     Act = ActiveOp(reconstruction)
+    T = TOp(reconstruction.ravel())
     Inact = InactiveOp(reconstruction)
-    A = pylops.Block([[L,K.adjoint()],[Act*K-Inact*K,Inact]])
-    b = np.concatenate((-reconstruction.ravel()+original.ravel(),np.zeros(2*n)),axis=0)
-    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b))
+    A = pylops.Block([[Id,K.adjoint()],[-L*T,Inact + 1*Act]])
+    b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
+    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),tol=1e-4)
     if show==True:
-        print(p[1:])
-    return p[0][:n]
+        print(f'res:{np.linalg.norm(A*p[0]-b)}')
+        print(f'cg_out: {p[1:]}')
+    adj = p[0][:n]
+    return adj
 
-def patch_reg_gradient(original,noisy,reconstruction,reg_parameter:np.ndarray):
+def patch_reg_gradient(original,noisy,reconstruction,reg_parameter:np.ndarray,tol=1e-7):
     p = patch_reg_adjoint(original,reconstruction,reg_parameter)
-    L = pylops.Diagonal(p)
-    grad = L*(reconstruction.ravel()-noisy.ravel())
+    nx,ny = original.shape
+    n = nx*ny
+    Kx = FirstDerivative(n,kind='centered',dir=0,edge=True)
+    Ky = FirstDerivative(n,kind='centered',dir=1,edge=True)
+    Kxu = Kx*reconstruction.ravel()
+    Kyu = Ky*reconstruction.ravel()
+    Kxp = Kx*p
+    Kyp = Ky*p
+    nKu = np.linalg.norm(np.vstack((Kxu,Kyu)).T,axis=1)
+    mul = np.where(nKu<tol,0,1/nKu)
+    grad = mul * (Kxu * Kxp + Kyu * Kyp)
     grad = reverse_patch(grad,reg_parameter)
     return grad
 

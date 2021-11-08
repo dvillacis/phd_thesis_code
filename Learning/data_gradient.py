@@ -81,7 +81,7 @@ def patch_data_adjoint(original,reconstruction,data_parameter:np.ndarray,show=Fa
     Inact = InactiveOp(reconstruction)
     A = pylops.Block([[L,K.adjoint()],[Act*K-Inact*K,Inact]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
-    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=len(data_parameter))
+    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=len(data_parameter)+10)
     if show==True:
         print(p[1:])
     return p[0][:n]
