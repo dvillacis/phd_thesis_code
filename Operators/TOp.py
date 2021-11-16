@@ -2,10 +2,12 @@ import numpy as np
 from pylops import LinearOperator, FirstDerivative
 
 def phi(nu,tol):
-    return np.where(nu<tol,1,1/nu)
+    absnu = np.abs(nu)
+    return np.where(absnu<tol,1,1/absnu)
 
 def psi(nu,tol):
-    return np.where(nu<tol,0,-1/nu**3)
+    absnu = np.abs(nu)
+    return np.where(absnu<tol,0,-1/absnu**3)
 
 class TOp(LinearOperator):
     def __init__(self, u, tol=1e-10, dtype='float64'):

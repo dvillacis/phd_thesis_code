@@ -2,10 +2,12 @@ import numpy as np
 from pylops import LinearOperator, FirstDerivative
 
 def phi(nu,gamma):
-    return np.where(nu<gamma,-nu/gamma**2+2/gamma,1/nu)
+    absnu = np.abs(nu)
+    return np.where(absnu<gamma,-absnu/gamma**2+2/gamma,1/absnu)
 
 def psi(nu,gamma):
-    return np.where(nu<gamma,-1/nu/gamma**2,-1/nu**3)
+    absnu = np.abs(nu)
+    return np.where(absnu<gamma,-1/absnu/gamma**2,-1/absnu**3)
 
 class Tgamma(LinearOperator):
     def __init__(self, u, gamma=1e-10, dtype='float64'):
@@ -18,6 +20,7 @@ class Tgamma(LinearOperator):
         self.Kyu2 = self.Kyu * self.Kyu
         self.Kxyu = self.Kxu * self.Kyu
         self.nKu = np.linalg.norm(np.vstack((self.Kxu,self.Kyu)).T,axis=1)
+        print(np.min(self.nKu))
         #print(f'grad:\n{self.nKu}')
         self.phi_u = phi(self.nKu,gamma)
         self.psi_u = psi(self.nKu,gamma)

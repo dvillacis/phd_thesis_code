@@ -19,7 +19,7 @@ def scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False):
     Act = ActiveOp(reconstruction)
     T = TOp(reconstruction.ravel())
     Inact = InactiveOp(reconstruction)
-    A = pylops.Block([[Id,K.adjoint()],[-L*T,Inact + 1*Act]])
+    A = pylops.Block([[Id,K.adjoint()],[-L*Inact*T,Inact+1e-5*Act]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
     p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),tol=1e-4)
     if show==True:
@@ -58,11 +58,10 @@ def smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False):
     Id = pylops.Identity(2*n)
     Idn = pylops.Identity(n)
     Z = pylops.Zero(n)
-    Tg = Tgamma(reconstruction.ravel())
-    precond = 1
-    A = pylops.Block([[precond*Idn,K.adjoint()],[-L*Tg,precond*Id]])
-    b = np.concatenate((precond*(reconstruction.ravel()-original.ravel()),np.zeros(2*n)),axis=0)
-    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=100)
+    Tg = Tgamma(reconstruction.ravel(),gamma=1e-7)
+    A = pylops.Block([[Idn,K.adjoint()],[-L*Tg,Id]])
+    b = np.concatenate(((reconstruction.ravel()-original.ravel()),np.zeros(2*n)),axis=0)
+    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=10)
     if show==True:
         print(f'cg_out: {p[1:]}')
         print(f'res:{np.linalg.norm(A*p[0]-b)}')

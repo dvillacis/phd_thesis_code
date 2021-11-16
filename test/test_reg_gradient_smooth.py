@@ -22,11 +22,11 @@ class TestGradient(unittest.TestCase):
         # noisy = orig + noise_level * np.random.randn(t,t)
         # noisy = np.clip(noisy,0.0,1.0)
         
-        par = np.arange(0.3,0.5,step=0.005)
+        par = np.arange(1e-7,0.02,step=0.1e-2)
         grads=[]
         costs =[]
         for p in par:
-            rec = denoise(noisy,1.0,p,niter=1000)
+            rec = denoise(noisy,1.0,p,niter=5000)
             c = l2_cost(orig,rec)
             g = smooth_scalar_reg_gradient(orig,noisy,rec,p,show=True)
             grads.append(g)
