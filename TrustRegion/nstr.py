@@ -39,8 +39,7 @@ def nstr(f,g,x0,step_finder,init_radius = 1.0,maxiter = 100, tol=1e-5, max_radiu
             
         
         if verbose: 
-            print(x,p,f(x))
-            print(f'{it}\t{f(x):.6f}\t{g(x):.6f}\t{B.get_matrix()}\t{radius}')
+            print(f'{it}\t{f(x)}\t{np.linalg.norm(g(x))}\t{B.get_matrix()}\t{radius}')
         if np.linalg.norm(g(x))<tol: 
             return x,f(x),it
             break

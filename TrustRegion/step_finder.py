@@ -4,14 +4,14 @@ import scipy
 import scipy.linalg
 
 def cauchy_point_step_finder(gx, b, delta):
-    gt_b_g = b.dot(gx)
-    g_norm = scipy.linalg.norm(gx)
+    gt_b_g = np.dot(gx,b.dot(gx))
+    g_norm = np.linalg.norm(gx)
     if gt_b_g <= 0:
         taw = 1
     else:
         taw = min(g_norm**3./(delta*gt_b_g), 1.)
     cp = -1. * (taw*delta/g_norm) * gx
-    mul = np.floor(delta / scipy.linalg.norm(cp)) * (1-1e-3)
+    mul = np.floor(delta / np.linalg.norm(cp)) * (1-1e-3)
     if mul == 0:
         return cp * (1-1e-3)
     else:
@@ -35,7 +35,7 @@ def solve_taw_for_dogleg(pu, pb, delta):
 
 
 def dogleg_step_finder(gx, b, delta):
-    pb = -scipy.linalg.solve(b,gx)
+    pb = -scipy.linalg.solve(b.get_matrix(),gx)
     if np.linalg.norm(pb) <= delta:
         return pb
     pu = - (np.dot(gx,gx) / (np.dot(gx,b.dot(gx)))) * gx

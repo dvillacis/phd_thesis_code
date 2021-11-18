@@ -4,7 +4,7 @@ from Learning.cost import l2_cost_ds
 from TVDenoising.scalar_denoising import denoise_ds
 from TVDenoising.patch_denoising import patch_denoise_ds
 from Learning.data_gradient import scalar_data_gradient_ds, patch_data_gradient_ds
-from Learning.reg_gradient import scalar_reg_gradient_ds, patch_reg_gradient_ds
+from Learning.reg_gradient import scalar_reg_gradient_ds, patch_reg_gradient_ds, smooth_scalar_reg_gradient_ds
 
 #################################
 # SCALAR DATA PARAMETER LEARNING
@@ -39,7 +39,7 @@ def reg_cost_fn_scalar(dsfile,reg_parameter):
 
 def reg_gradient_fn_scalar(dsfile,reg_parameter):
     den_ds = denoise_ds(dsfile,data_parameter=1.0,reg_parameter=reg_parameter,niter=5000)
-    return scalar_reg_gradient_ds(den_ds,reg_parameter)
+    return smooth_scalar_reg_gradient_ds(den_ds,reg_parameter)
 
 def find_optimal_reg_scalar(dsfile,initial_reg_parameter,show=False):
     iprint = -1

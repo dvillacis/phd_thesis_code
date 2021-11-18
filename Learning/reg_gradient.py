@@ -50,7 +50,7 @@ def scalar_reg_gradient_ds(ds_denoised,reg_parameter):
     return grad/len(ds_denoised)
 
 # SMOOTH SCALAR
-def smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False):
+def smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False,gamma=1e-5):
     nx,ny = original.shape
     n = nx*ny
     K = pylops.Gradient(dims=(nx,ny),kind='forward')
@@ -58,7 +58,7 @@ def smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False):
     Id = pylops.Identity(2*n)
     Idn = pylops.Identity(n)
     Z = pylops.Zero(n)
-    Tg = Tgamma(reconstruction.ravel(),gamma=1e-7)
+    Tg = Tgamma(reconstruction.ravel(),gamma=gamma)
     A = pylops.Block([[Idn,K.adjoint()],[-L*Tg,Id]])
     b = np.concatenate(((reconstruction.ravel()-original.ravel()),np.zeros(2*n)),axis=0)
     p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=10)
@@ -67,10 +67,10 @@ def smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False):
         print(f'res:{np.linalg.norm(A*p[0]-b)}')
     return p[0][:n]
 
-def smooth_scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,gamma=1e-4,show=False):
+def smooth_scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,gamma=1e-5,show=False):
     nx,ny = original.shape
     n = nx*ny
-    p = smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=show)
+    p = smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=show,gamma=gamma)
     Kx = FirstDerivative(n,kind='centered',dir=0,edge=True)
     Ky = FirstDerivative(n,kind='centered',dir=1,edge=True)
     Kxu = Kx*reconstruction.ravel()
@@ -78,12 +78,18 @@ def smooth_scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,gamma
     Kxp = Kx*p
     Kyp = Ky*p
     nKu = np.linalg.norm(np.vstack((Kxu,Kyu)).T,axis=1)
-    mul = np.where(nKu<gamma,nKu/(2*gamma**2)-2/gamma,1/nKu)
+    mul = np.where(nKu<gamma,gamma,1/nKu)
     hx = mul*Kxu
     hy = mul*Kyu
     #grad = L*(reconstruction.ravel()-noisy.ravel())
     grad = -np.sum(hx*Kxp + hy*Kyp)
     return grad
+
+def smooth_scalar_reg_gradient_ds(ds_denoised,reg_parameter):
+    grad = 0
+    for img in ds_denoised.keys():
+        grad += smooth_scalar_reg_gradient(ds_denoised[img][0],ds_denoised[img][1],ds_denoised[img][2],reg_parameter)
+    return grad/len(ds_denoised)
 
 # PATCH
 def patch_reg_adjoint(original,reconstruction,reg_parameter:np.ndarray,show=False):
