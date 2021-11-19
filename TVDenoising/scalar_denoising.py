@@ -13,7 +13,7 @@ def denoise(noisy,data_parameter,reg_parameter,niter=100,show=False):
     L = 8.0 # TODO: Estimar mejor los parametros de cp
     tau = 1.0/np.sqrt(L)
     mu = 1.0/np.sqrt(L)
-    img = pyproximal.optimization.primaldual.PrimalDual(l2,l21,K,np.zeros_like(noisy.ravel()),tau,mu,niter=niter,show=show)
+    img,_ = pyproximal.optimization.primaldual.AdaptivePrimalDual(l2,l21,K,np.zeros_like(noisy.ravel()),tau,mu,niter=niter,show=show)
     return np.reshape(img,noisy.shape)
 
 def denoise_ds(dsfile,data_parameter,reg_parameter,niter=100,show=False):
