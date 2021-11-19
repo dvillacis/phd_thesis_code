@@ -7,15 +7,11 @@ def cauchy_point_step_finder(gx, b, delta):
     gt_b_g = np.dot(gx,b.dot(gx))
     g_norm = np.linalg.norm(gx)
     if gt_b_g <= 0:
-        taw = 1
+        taw = delta/g_norm
     else:
-        taw = min(g_norm**3./(delta*gt_b_g), 1.)
-    cp = -1. * (taw*delta/g_norm) * gx
-    mul = np.floor(delta / np.linalg.norm(cp)) * (1-1e-3)
-    if mul == 0:
-        return cp * (1-1e-3)
-    else:
-        return mul * cp
+        taw = min(g_norm**2/gt_b_g, delta/g_norm)
+    print(delta/g_norm,gx,g_norm)
+    return -taw*gx
 
 def solve_taw_for_dogleg(pu, pb, delta):
     a = np.dot(pu-pb, pu-pb)
