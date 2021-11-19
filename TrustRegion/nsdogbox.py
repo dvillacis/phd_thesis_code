@@ -2,7 +2,7 @@ import numpy as np
 from numpy.linalg import norm, lstsq
 from scipy.optimize._lsq.dogbox import dogleg_step,find_intersection
 from scipy.optimize._lsq.common import print_iteration_nonlinear, step_size_to_bound,in_bounds,update_tr_radius,evaluate_quadratic,build_quadratic_1d,minimize_quadratic_1d,check_termination,print_header_nonlinear
-from scipy.optimize import BFGS
+from scipy.optimize import BFGS, SR1
 from scipy.optimize import OptimizeResult
 
 def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=1.0,threshold_radius=1e-5,verbose=0,xtol=1e-5,ftol=1e-5,gtol=1e-5,max_nfev=1000):
