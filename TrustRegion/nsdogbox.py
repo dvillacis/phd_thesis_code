@@ -3,11 +3,12 @@ from numpy.linalg import norm, lstsq
 from scipy.optimize._lsq.dogbox import dogleg_step,find_intersection
 from scipy.optimize._lsq.common import print_iteration_nonlinear, step_size_to_bound,in_bounds,update_tr_radius,evaluate_quadratic,build_quadratic_1d,minimize_quadratic_1d,check_termination,print_header_nonlinear
 from scipy.optimize import BFGS
+from scipy.optimize import OptimizeResult
 
 def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=1.0,threshold_radius=1e-5,verbose=0,xtol=1e-5,ftol=1e-5,gtol=1e-5,max_nfev=1000):
 
     if not lb:
-        lb = np.zeros_like(x0)
+        lb = 0.001*np.ones_like(x0)
     if not ub:
         ub = np.ones_like(x0) * np.inf
 
@@ -24,8 +25,12 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=1.0,threshold_r
     step_norm = None
     actual_reduction = None
     nfev = 1
+    njev = 1
     B = BFGS()
-    B.initialize(len(x),'hess')
+    if isinstance(x,float):
+        B.initialize(1,'hess')
+    else:
+        B.initialize(len(x),'hess')
     scale = np.ones_like(x0)
     scaleinv = 1/scale
 
@@ -111,6 +116,7 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=1.0,threshold_r
 
             B.update(step,g-grad(x_new))
 
+            njev += 1
             if radius >= threshold_radius:
                 g = grad(x_new)
             else:
@@ -123,4 +129,6 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=1.0,threshold_r
     if termination_status is None:
         termination_status = 0
 
-    return x
+    return OptimizeResult(
+        x=x, fun=f, jac=g, grad=g_full, optimality=g_norm,
+        active_mask=on_bound, nfev=nfev, njev=njev, status=termination_status, message=termination_status)

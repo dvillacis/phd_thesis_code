@@ -5,6 +5,7 @@ from TVDenoising.scalar_denoising import denoise_ds
 from TVDenoising.patch_denoising import patch_denoise_ds
 from Learning.data_gradient import scalar_data_gradient_ds, patch_data_gradient_ds
 from Learning.reg_gradient import scalar_reg_gradient_ds, patch_reg_gradient_ds, smooth_scalar_reg_gradient_ds
+from TrustRegion.nsdogbox import nsdogbox
 
 #################################
 # SCALAR DATA PARAMETER LEARNING
@@ -21,9 +22,10 @@ def data_gradient_fn_scalar(dsfile,data_parameter):
 def find_optimal_data_scalar(dsfile,initial_data_parameter,show=False):
     iprint = 0
     if show == True:
-        iprint = 3
-    bnds = scipy.optimize.Bounds(0.001,np.inf)
-    optimal = scipy.optimize.minimize(fun=lambda x: data_cost_fn_scalar(dsfile,x),hess=scipy.optimize.SR1(),jac=lambda x:data_gradient_fn_scalar(dsfile,x),x0=initial_data_parameter,method='trust-constr',bounds=bnds,options={'verbose':iprint})
+        iprint = 2
+    #bnds = scipy.optimize.Bounds(0.001,np.inf)
+    optimal = nsdogbox(fun=lambda x: data_cost_fn_scalar(dsfile,x),grad=lambda x:data_gradient_fn_scalar(dsfile,x),reg_grad=lambda x:data_gradient_fn_scalar(dsfile,x),x0=initial_data_parameter,verbose=iprint)
+    #optimal = scipy.optimize.minimize(fun=lambda x: data_cost_fn_scalar(dsfile,x),hess=scipy.optimize.SR1(),jac=lambda x:data_gradient_fn_scalar(dsfile,x),x0=initial_data_parameter,method='trust-constr',bounds=bnds,options={'verbose':iprint})
     if show == True:
         print(optimal)
     optimal_ds = denoise_ds(dsfile,data_parameter=optimal.x,reg_parameter=1.0)
@@ -68,9 +70,10 @@ def data_gradient_fn_patch(dsfile,data_parameter:np.ndarray):
 def find_optimal_data_patch(dsfile,initial_data_parameter,show=False):
     iprint = 0
     if show == True:
-        iprint = 3
-    bnds = scipy.optimize.Bounds(0.001*np.ones(initial_data_parameter.ravel().shape),[np.inf]*len(initial_data_parameter.ravel()))
-    optimal = scipy.optimize.minimize(fun=lambda x: data_cost_fn_patch(dsfile,x),jac=lambda x:data_gradient_fn_patch(dsfile,x),x0=initial_data_parameter.ravel(),hess=scipy.optimize.SR1(),method='trust-constr',bounds=bnds,options={'verbose':iprint,'gtol':1e-4})
+        iprint = 2
+    #bnds = scipy.optimize.Bounds(0.001*np.ones(initial_data_parameter.ravel().shape),[np.inf]*len(initial_data_parameter.ravel()))
+    optimal = nsdogbox(fun=lambda x: data_cost_fn_patch(dsfile,x),grad=lambda x:data_gradient_fn_patch(dsfile,x),reg_grad=lambda x:data_gradient_fn_patch(dsfile,x),x0=initial_data_parameter.ravel(),verbose=iprint)
+    #optimal = scipy.optimize.minimize(fun=lambda x: data_cost_fn_patch(dsfile,x),jac=lambda x:data_gradient_fn_patch(dsfile,x),x0=initial_data_parameter.ravel(),hess=scipy.optimize.SR1(),method='trust-constr',bounds=bnds,options={'verbose':iprint,'gtol':1e-4})
     if show == True:
         print(optimal)
     x = optimal.x
