@@ -4,7 +4,12 @@ from scipy.optimize._lsq.dogbox import dogleg_step,find_intersection
 from scipy.optimize._lsq.common import print_iteration_nonlinear, step_size_to_bound,in_bounds,update_tr_radius,evaluate_quadratic,build_quadratic_1d,minimize_quadratic_1d,check_termination,print_header_nonlinear
 from scipy.optimize import BFGS
 
-def nsdogbox(fun,grad,x0,lb,ub,initial_radius=1.0,verbose=0,xtol=1e-5,ftol=1e-5,gtol=1e-5,max_nfev=100):
+def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=1.0,threshold_radius=1e-5,verbose=0,xtol=1e-5,ftol=1e-5,gtol=1e-5,max_nfev=1000):
+
+    if not lb:
+        lb = np.zeros_like(x0)
+    if not ub:
+        ub = np.ones_like(x0) * np.inf
 
     on_bound = np.zeros_like(x0,dtype=int)
     on_bound[np.equal(x0,lb)] = -1
@@ -27,7 +32,10 @@ def nsdogbox(fun,grad,x0,lb,ub,initial_radius=1.0,verbose=0,xtol=1e-5,ftol=1e-5,
     if verbose == 2:
         print_header_nonlinear()
     f = fun(x)
-    g = grad(x)
+    if radius >= threshold_radius:
+        g = grad(x)
+    else:
+        g = reg_grad(x)
 
     while True:
         active_set = on_bound * g < 0
@@ -53,8 +61,8 @@ def nsdogbox(fun,grad,x0,lb,ub,initial_radius=1.0,verbose=0,xtol=1e-5,ftol=1e-5,
         scale_free = scale[free_set]
         B_free = B.get_matrix()[:,free_set]
 
-        print(B_free.shape,g_free.shape)
-        newton_step = lstsq(B_free,-g_free,rcond=-1)[0]
+        # print(B_free.shape,g_free.shape)
+        newton_step = lstsq(B_free,-g,rcond=-1)[0]
         a,b = build_quadratic_1d(B_free,g_free,-g_free)
         actual_reduction = -1.0
         while actual_reduction <= 0 and nfev < max_nfev:
@@ -103,7 +111,10 @@ def nsdogbox(fun,grad,x0,lb,ub,initial_radius=1.0,verbose=0,xtol=1e-5,ftol=1e-5,
 
             B.update(step,g-grad(x_new))
 
-            g = grad(x_new)
+            if radius >= threshold_radius:
+                g = grad(x_new)
+            else:
+                g = reg_grad(x_new)
         else:
             step_norm = 0
             actual_reduction = 0
