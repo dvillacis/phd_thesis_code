@@ -3,7 +3,7 @@ from pylops import LinearOperator, FirstDerivative
 
 def phi(nu,gamma):
     absnu = np.abs(nu)
-    return np.where(absnu<gamma,1,1/absnu)
+    return np.where(absnu<gamma,gamma,1/absnu)
 
 def psi(nu,gamma):
     absnu = np.abs(nu)

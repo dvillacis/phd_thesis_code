@@ -42,7 +42,7 @@ if not os.path.isfile(dataset_file):
 
 if parameter_type == 'scalar':
     optimal,optimal_ds = find_optimal_reg_scalar(dataset_file,paramater_initial_value,show=show)
-    if optimal.success == True:
+    if optimal.status == 1:
         print(f'Optimal parameter found:\n{optimal.x}')
     else:
         print(f'{optimal.message}')
@@ -54,7 +54,7 @@ if parameter_type == 'scalar':
 else:
     paramater_initial_value = paramater_initial_value * np.ones((patch_size,patch_size))
     optimal,optimal_ds = find_optimal_reg_patch(dataset_file,paramater_initial_value,show=show)
-    if optimal.success == True:
+    if optimal.status == 1:
         print(f'Optimal parameter found:\n{optimal.x}')
     else:
         print(f'{optimal.message}')

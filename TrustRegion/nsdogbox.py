@@ -1,11 +1,33 @@
 import numpy as np
 from numpy.linalg import norm, lstsq
 from scipy.optimize._lsq.dogbox import dogleg_step,find_intersection
-from scipy.optimize._lsq.common import print_iteration_nonlinear, step_size_to_bound,in_bounds,update_tr_radius,evaluate_quadratic,build_quadratic_1d,minimize_quadratic_1d,check_termination,print_header_nonlinear
+from scipy.optimize._lsq.common import step_size_to_bound,in_bounds,update_tr_radius,evaluate_quadratic,build_quadratic_1d,minimize_quadratic_1d,check_termination
 from scipy.optimize import BFGS, SR1
 from scipy.optimize import OptimizeResult
 
-def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=1.0,threshold_radius=1e-5,verbose=0,xtol=1e-5,ftol=1e-5,gtol=1e-5,max_nfev=1000):
+def print_iteration_dogbox(iteration, nfev, cost, cost_reduction,
+                              step_norm, optimality,radius):
+    if cost_reduction is None:
+        cost_reduction = " " * 15
+    else:
+        cost_reduction = "{0:^15.2e}".format(cost_reduction)
+
+    if step_norm is None:
+        step_norm = " " * 15
+    else:
+        step_norm = "{0:^15.2e}".format(step_norm)
+
+    print("{0:^15}{1:^15}{2:^15.4e}{3}{4}{5:^15.2e}{6:^15.2e}"
+          .format(iteration, nfev, cost, cost_reduction,
+                  step_norm, optimality,radius))
+
+
+def print_header_dogbox():
+    print("{0:^15}{1:^15}{2:^15}{3:^15}{4:^15}{5:^15}{6:^15}"
+          .format("Iteration", "Total nfev", "Cost", "Cost reduction",
+                  "Step norm", "Optimality", "TR-Radius"))
+
+def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=None,threshold_radius=1e-4,verbose=0,xtol=1e-8,ftol=1e-8,gtol=1e-5,max_nfev=10000):
 
     if not lb:
         lb = 0.001*np.ones_like(x0)
@@ -19,27 +41,30 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=1.0,threshold_r
     x = x0
     step = np.empty_like(x0)
     radius = initial_radius
+    if radius == None:
+        radius = norm(x0, ord=np.inf)
 
     termination_status = None
     iteration = 0
     step_norm = None
     actual_reduction = None
     nfev = 1
-    njev = 1
-    B = BFGS()
-    if isinstance(x,float):
-        B.initialize(1,'hess')
-    else:
-        B.initialize(len(x),'hess')
+    njev = 0
+    n_reg_jev = 0
+    B = BFGS(init_scale=0.01)
+    #B = BFGS()
+    B.initialize(len(x),'hess')
     scale = np.ones_like(x0)
     scaleinv = 1/scale
 
     if verbose == 2:
-        print_header_nonlinear()
+        print_header_dogbox()
     f = fun(x)
     if radius >= threshold_radius:
+        njev += 1
         g = grad(x)
     else:
+        n_reg_jev += 1
         g = reg_grad(x)
 
     while True:
@@ -55,7 +80,7 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=1.0,threshold_r
             termination_status = 1
 
         if verbose == 2:
-            print_iteration_nonlinear(iteration,nfev,fun(x),actual_reduction,step_norm,g_norm)
+            print_iteration_dogbox(iteration,nfev,fun(x),actual_reduction,step_norm,g_norm,radius)
 
         if termination_status is not None or nfev == max_nfev:
             break
@@ -95,6 +120,10 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=1.0,threshold_r
 
             radius, ratio = update_tr_radius(radius,actual_reduction,predicted_reduction,step_h_norm,tr_hit)
 
+            if radius < 1e-6:
+                B.initialize(len(x),'hess')
+                #radius = norm(x)
+
             step_norm = norm(step)
             termination_status = check_termination(actual_reduction,f,step_norm,norm(x),ratio,ftol,xtol)
 
@@ -112,16 +141,18 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=1.0,threshold_r
             x[mask] = ub[mask]
 
             f = f_new
-            f_true = f.copy()
-
-            B.update(step,g-grad(x_new))
 
             njev += 1
             if radius >= threshold_radius:
+                B.update(step,g-grad(x_new))
+                njev +=1
                 g = grad(x_new)
             else:
+                B.update(step,g-reg_grad(x_new))
+                n_reg_jev += 1
                 g = reg_grad(x_new)
         else:
+            #B.initialize(len(x),'hess')
             step_norm = 0
             actual_reduction = 0
 
@@ -131,4 +162,4 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=1.0,threshold_r
 
     return OptimizeResult(
         x=x, fun=f, jac=g, grad=g_full, optimality=g_norm,
-        active_mask=on_bound, nfev=nfev, njev=njev, status=termination_status, message=termination_status)
+        active_mask=on_bound, nfev=nfev, njev=njev, n_reg_jev=n_reg_jev, status=termination_status, message=termination_status)
