@@ -1,6 +1,8 @@
 import numpy as np
 import pylops
 from pylops import FirstDerivative
+import scipy
+import scipy.sparse
 
 from Operators.operators import ActiveOp, InactiveOp
 from Operators.TOp import TOp
@@ -19,13 +21,16 @@ def scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False,tol=1e-1
     Act = ActiveOp(reconstruction)
     T = TOp(reconstruction.ravel(),tol=tol)
     Inact = InactiveOp(reconstruction)
-    A = pylops.Block([[Id,K.adjoint()],[-L*Inact*T,Inact+1e-4*Act]])
+    A = pylops.Block([[Id,K.adjoint()],[-L*Inact*T,Inact+1e-8*Act]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
-    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),tol=1e-10)
+    #Amat = A.tosparse()
+    p = scipy.sparse.linalg.cg(A,b)
+    #p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),tol=1e-10)
     if show==True:
-        print(f'res:{np.linalg.norm(A*p[0]-b)}')
+        print(f'res:{np.linalg.norm(A*p-b)}')
         print(f'cg_out: {p[1:]}')
     adj = p[0][:n]
+    #adj = p[:n]
     return adj
 
 def scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,show=False,tol=1e-10):

@@ -40,11 +40,11 @@ def find_optimal_data_scalar(dsfile,initial_data_parameter,show=False):
 #################################
 
 def reg_cost_fn_scalar(dsfile,reg_parameter):
-    den_ds = denoise_ds(dsfile,data_parameter=1.0,reg_parameter=reg_parameter,niter=10000)
+    den_ds = denoise_ds(dsfile,data_parameter=1.0,reg_parameter=reg_parameter,niter=20000)
     return l2_cost_ds(den_ds)
 
 def reg_gradient_fn_scalar(dsfile,reg_parameter):
-    den_ds = denoise_ds(dsfile,data_parameter=1.0,reg_parameter=reg_parameter[0],niter=10000)
+    den_ds = denoise_ds(dsfile,data_parameter=1.0,reg_parameter=reg_parameter[0],niter=20000)
     return np.array([smooth_scalar_reg_gradient_ds(den_ds,reg_parameter[0])])
 
 def find_optimal_reg_scalar(dsfile,initial_reg_parameter,show=False):
