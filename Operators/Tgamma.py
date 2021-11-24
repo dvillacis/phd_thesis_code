@@ -3,11 +3,11 @@ from pylops import LinearOperator, FirstDerivative
 
 def phi(nu,gamma):
     absnu = np.abs(nu)
-    return np.where(absnu<gamma,gamma,1/absnu)
+    return np.where(absnu<gamma,-absnu/gamma**2+2/gamma,1/absnu)
 
 def psi(nu,gamma):
     absnu = np.abs(nu)
-    return np.where(absnu<gamma,0,-1/absnu**3)
+    return np.where(absnu<gamma,-1/(absnu+gamma)/gamma**2,-1/absnu**3)
 
 class Tgamma(LinearOperator):
     def __init__(self, u, gamma=1e-5, dtype='float64'):

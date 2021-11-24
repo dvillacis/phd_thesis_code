@@ -8,30 +8,30 @@ from Operators.patch import patch, reverse_patch
 from Operators.norms import pointwise_euclidean_norm
 from Operators.Tgamma import Tgamma
 
-def scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False):
+def scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False,tol=1e-10):
     nx,ny = original.shape
     n = nx*ny
-    K = pylops.Gradient(dims=(nx,ny),kind='forward')
+    K = pylops.Gradient(dims=(nx,ny),kind='centered',edge=True)
     Id = pylops.Identity(n)
     L = pylops.Diagonal(reg_parameter * np.ones(2*n))
     Id2 = pylops.Identity(2*n)
     Z = pylops.Zero(n)
     Act = ActiveOp(reconstruction)
-    T = TOp(reconstruction.ravel())
+    T = TOp(reconstruction.ravel(),tol=tol)
     Inact = InactiveOp(reconstruction)
-    A = pylops.Block([[Id,K.adjoint()],[-L*Inact*T,Inact+1e-5*Act]])
+    A = pylops.Block([[Id,K.adjoint()],[-L*Inact*T,Inact+1e-4*Act]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
-    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),tol=1e-4)
+    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),tol=1e-10)
     if show==True:
         print(f'res:{np.linalg.norm(A*p[0]-b)}')
         print(f'cg_out: {p[1:]}')
     adj = p[0][:n]
     return adj
 
-def scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,show=False,tol=1e-7):
+def scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,show=False,tol=1e-10):
     nx,ny = original.shape
     n = nx*ny
-    p = scalar_reg_adjoint(original,reconstruction,reg_parameter,show=show)
+    p = scalar_reg_adjoint(original,reconstruction,reg_parameter,show=show,tol=tol)
     Kx = FirstDerivative(n,kind='centered',dir=0,edge=True)
     Ky = FirstDerivative(n,kind='centered',dir=1,edge=True)
     Kxu = Kx*reconstruction.ravel()
@@ -39,7 +39,7 @@ def scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,show=False,t
     Kxp = Kx*p
     Kyp = Ky*p
     nKu = np.linalg.norm(np.vstack((Kxu,Kyu)).T,axis=1)
-    mul = np.where(nKu<tol,0,1/nKu)
+    mul = np.where(nKu<tol,0,1.0/nKu)
     grad = mul * (Kxu * Kxp + Kyu * Kyp)
     return -np.sum(grad)
 
@@ -104,7 +104,7 @@ def patch_reg_adjoint(original,reconstruction,reg_parameter:np.ndarray,show=Fals
     Act = ActiveOp(reconstruction)
     T = TOp(reconstruction.ravel())
     Inact = InactiveOp(reconstruction)
-    A = pylops.Block([[Id,K.adjoint()],[-L*T,Inact + 1*Act]])
+    A = pylops.Block([[Id,K.adjoint()],[-L*T,Inact + 1e-5*Act]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
     p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),tol=1e-4)
     if show==True:

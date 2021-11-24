@@ -11,11 +11,11 @@ from Learning.reg_gradient import smooth_scalar_reg_gradient
 class TestGradient(unittest.TestCase):
     def test_smooth_scalar_reg_gradient(self):
         orig,noisy = get_image_pair('datasets/cameraman_128_5/filelist.txt',0)
-        par = np.arange(1e-7,0.08,step=0.09e-2)
+        par = np.arange(0.0152,0.0157,step=0.1e-4)
         grads=[]
         costs =[]
         for p in par:
-            rec = denoise(noisy,1.0,p,niter=5000)
+            rec = denoise(noisy,1.0,p,niter=10000)
             c = l2_cost(orig,rec)
             g = smooth_scalar_reg_gradient(orig,noisy,rec,p,show=True)
             grads.append(g)

@@ -120,8 +120,8 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=None,threshold_
 
             radius, ratio = update_tr_radius(radius,actual_reduction,predicted_reduction,step_h_norm,tr_hit)
 
-            if radius < 1e-6:
-                B.initialize(len(x),'hess')
+            # if radius < 1e-6:
+            #     B.initialize(len(x),'hess')
                 #radius = norm(x)
 
             step_norm = norm(step)

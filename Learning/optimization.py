@@ -53,7 +53,7 @@ def find_optimal_reg_scalar(dsfile,initial_reg_parameter,show=False):
         iprint = 2
     # bnds = scipy.optimize.Bounds(1e-10,np.inf)
     # optimal = scipy.optimize.minimize(fun=lambda x: reg_cost_fn_scalar(dsfile,x),jac=lambda x:reg_gradient_fn_scalar(dsfile,x),hess=scipy.optimize.SR1(),x0=initial_reg_parameter,method='trust-constr',bounds=bnds,options={'verbose':iprint,'gtol':1e-6})
-    optimal = nsdogbox(fun=lambda x: reg_cost_fn_scalar(dsfile,x),grad=lambda x:reg_gradient_fn_scalar(dsfile,x),reg_grad=lambda x:reg_gradient_fn_scalar(dsfile,x),x0=np.array([initial_reg_parameter]),verbose=iprint,initial_radius=1.0)
+    optimal = nsdogbox(fun=lambda x: reg_cost_fn_scalar(dsfile,x),grad=lambda x:reg_gradient_fn_scalar(dsfile,x),reg_grad=lambda x:reg_gradient_fn_scalar(dsfile,x),x0=np.array([initial_reg_parameter]),verbose=iprint)
     if show == True:
         print(optimal)
     optimal_ds = denoise_ds(dsfile,data_parameter=1.0,reg_parameter=optimal.x)
@@ -103,11 +103,12 @@ def reg_gradient_fn_patch(dsfile,reg_parameter):
     return patch_reg_gradient_ds(den_ds,reg_parameter)
 
 def find_optimal_reg_patch(dsfile,initial_reg_parameter,show=False):
-    iprint = -1
+    iprint = 0
     if show == True:
-        iprint = 100
-    bnds = scipy.optimize.Bounds(0.001*np.ones(initial_reg_parameter.ravel().shape),[np.inf]*len(initial_reg_parameter.ravel()))
-    optimal = scipy.optimize.minimize(fun=lambda x: reg_cost_fn_patch(dsfile,x),jac=lambda x:reg_gradient_fn_patch(dsfile,x),hess=scipy.optimize.SR1(),x0=initial_reg_parameter.ravel(),method='trust-constr',bounds=bnds,options={'verbose':iprint,'gtol':1e-6})
+        iprint = 2
+    #bnds = scipy.optimize.Bounds(0.001*np.ones(initial_reg_parameter.ravel().shape),[np.inf]*len(initial_reg_parameter.ravel()))
+    #optimal = scipy.optimize.minimize(fun=lambda x: reg_cost_fn_patch(dsfile,x),jac=lambda x:reg_gradient_fn_patch(dsfile,x),hess=scipy.optimize.SR1(),x0=initial_reg_parameter.ravel(),method='trust-constr',bounds=bnds,options={'verbose':iprint,'gtol':1e-6})
+    optimal = nsdogbox(fun=lambda x: reg_cost_fn_patch(dsfile,x),grad=lambda x:reg_gradient_fn_patch(dsfile,x),reg_grad=lambda x:reg_gradient_fn_patch(dsfile,x),x0=initial_reg_parameter.ravel(),verbose=iprint)
     if show == True:
         print(optimal)
     x = optimal.x

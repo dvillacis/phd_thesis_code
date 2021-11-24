@@ -2,18 +2,16 @@ import numpy as np
 from pylops import LinearOperator, FirstDerivative
 
 def phi(nu,tol):
-    absnu = np.abs(nu)
-    return np.where(absnu<tol,1,1/absnu)
+    return np.where(nu<tol,1,-1/nu)
 
 def psi(nu,tol):
-    absnu = np.abs(nu)
-    return np.where(absnu<tol,0,-1/absnu**3)
+    return np.where(nu<tol,0,1/nu**3)
 
 class TOp(LinearOperator):
-    def __init__(self, u, tol=1e-10, dtype='float64'):
+    def __init__(self, u, tol=1e-4, dtype='float64'):
         n = len(u)
-        self.Kx = FirstDerivative(n,kind='centered',dir=0,edge=True)
-        self.Ky = FirstDerivative(n,kind='centered',dir=1,edge=True)
+        self.Kx = FirstDerivative(n,kind='centered',dir=0,edge=False)
+        self.Ky = FirstDerivative(n,kind='centered',dir=1,edge=False)
         self.Kxu = self.Kx*u
         self.Kyu = self.Ky*u
         self.Kxu2 = self.Kxu * self.Kxu
