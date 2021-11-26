@@ -7,7 +7,7 @@ import scipy.sparse
 from Operators.operators import ActiveOp, InactiveOp
 from Operators.TOp import TOp
 from Operators.patch import patch, reverse_patch
-from Operators.norms import pointwise_euclidean_norm
+from Operators.norms import pointwise_euclidean_norm,tv_smooth_subdiff
 from Operators.Tgamma import Tgamma
 
 def scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False,tol=1e-10):
@@ -21,7 +21,7 @@ def scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False,tol=1e-1
     Act = ActiveOp(reconstruction)
     T = TOp(reconstruction.ravel(),tol=tol)
     Inact = InactiveOp(reconstruction)
-    A = pylops.Block([[Id,K.adjoint()],[-L*Inact*T,Inact+1e-8*Act]])
+    A = pylops.Block([[Id,K.adjoint()],[-L*Inact*T,Inact+1e-10*Act]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
     #Amat = A.tosparse()
     p = scipy.sparse.linalg.gmres(A,b)
@@ -55,7 +55,7 @@ def scalar_reg_gradient_ds(ds_denoised,reg_parameter):
     return grad/len(ds_denoised)
 
 # SMOOTH SCALAR
-def smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False,gamma=1e-5):
+def smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False,gamma=1000):
     nx,ny = original.shape
     n = nx*ny
     K = pylops.Gradient(dims=(nx,ny),kind='forward')
@@ -65,28 +65,23 @@ def smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False,g
     Tg = Tgamma(reconstruction.ravel(),gamma=gamma)
     A = pylops.Block([[Idn,K.adjoint()],[-L*Tg,Id]])
     b = np.concatenate(((reconstruction.ravel()-original.ravel()),np.zeros(2*n)),axis=0)
-    p = scipy.sparse.linalg.gmres(A,b)
+    p = scipy.sparse.linalg.gmres(A,b,atol='legacy')
     #p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=10)
-    # if show==True:
-    #     print(f'cg_out: {p[1:]}')
-    #     print(f'res:{np.linalg.norm(A*p[0]-b)}')
+    if show==True:
+        print(f'cg_out: {p[1:]}')
+        print(f'res:{np.linalg.norm(A*p[0]-b)}')
     return p[0][:n]
     #return p[:n]
 
-def smooth_scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,gamma=1e-5,show=False):
+def smooth_scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,gamma=100000,show=False):
     nx,ny = original.shape
     n = nx*ny
     p = smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=show,gamma=gamma)
-    Kx = FirstDerivative(n,kind='centered',dir=0,edge=True)
-    Ky = FirstDerivative(n,kind='centered',dir=1,edge=True)
-    Kxu = Kx*reconstruction.ravel()
-    Kyu = Ky*reconstruction.ravel()
+    Kx = FirstDerivative(n,kind='forward',dir=0,edge=True)
+    Ky = FirstDerivative(n,kind='forward',dir=1,edge=True)
     Kxp = Kx*p
     Kyp = Ky*p
-    nKu = np.linalg.norm(np.vstack((Kxu,Kyu)).T,axis=1)
-    mul = np.where(nKu<gamma,nKu/gamma**2-1/gamma,1./nKu)
-    hx = mul*Kxu
-    hy = mul*Kyu
+    hx,hy = tv_smooth_subdiff(reconstruction.ravel(),gamma=gamma)
     #grad = L*(reconstruction.ravel()-noisy.ravel())
     grad = -np.sum(hx*Kxp + hy*Kyp)
     return grad
@@ -112,7 +107,8 @@ def patch_reg_adjoint(original,reconstruction,reg_parameter:np.ndarray,show=Fals
     Inact = InactiveOp(reconstruction)
     A = pylops.Block([[Id,K.adjoint()],[-L*T,Inact + 1e-5*Act]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
-    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),tol=1e-4)
+    p = scipy.sparse.linalg.gmres(A,b,atol='legacy')
+    # p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),tol=1e-4)
     if show==True:
         print(f'res:{np.linalg.norm(A*p[0]-b)}')
         print(f'cg_out: {p[1:]}')
@@ -130,7 +126,7 @@ def patch_reg_gradient(original,noisy,reconstruction,reg_parameter:np.ndarray,to
     Kxp = Kx*p
     Kyp = Ky*p
     nKu = np.linalg.norm(np.vstack((Kxu,Kyu)).T,axis=1)
-    mul = np.where(nKu<tol,0,1/nKu)
+    mul = np.where(nKu<tol,0,-1/nKu)
     grad = mul * (Kxu * Kxp + Kyu * Kyp)
     grad = reverse_patch(grad,reg_parameter)
     return grad
@@ -139,4 +135,45 @@ def patch_reg_gradient_ds(ds_denoised,reg_parameter):
     grad = 0
     for img in ds_denoised.keys():
         grad += patch_reg_gradient(ds_denoised[img][0],ds_denoised[img][1],ds_denoised[img][2],reg_parameter)
+    return grad/len(ds_denoised)
+
+# SMOOTH PATCH
+def smooth_patch_reg_adjoint(original,reconstruction,reg_parameter,show=False,gamma=1000):
+    reg_parameter = patch(reg_parameter,original)
+    nx,ny = original.shape
+    n = nx*ny
+    K = pylops.Gradient(dims=(nx,ny),kind='forward')
+    L = pylops.Diagonal(np.concatenate((reg_parameter,reg_parameter)) * np.ones(2*n))
+    Id = pylops.Identity(2*n)
+    Idn = pylops.Identity(n)
+    Tg = Tgamma(reconstruction.ravel(),gamma=gamma)
+    A = pylops.Block([[Idn,K.adjoint()],[-L*Tg,Id]])
+    b = np.concatenate(((reconstruction.ravel()-original.ravel()),np.zeros(2*n)),axis=0)
+    p = scipy.sparse.linalg.gmres(A,b,atol='legacy')
+    #p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=10)
+    if show==True:
+        print(f'cg_out: {p[1:]}')
+        print(f'res:{np.linalg.norm(A*p[0]-b)}')
+    return p[0][:n]
+    #return p[:n]
+
+def smooth_patch_reg_gradient(original,noisy,reconstruction,reg_parameter,gamma=100000,show=False):
+    p = patch_reg_adjoint(original,reconstruction,reg_parameter)
+    nx,ny = original.shape
+    n = nx*ny
+    p = smooth_patch_reg_adjoint(original,reconstruction,reg_parameter,show=show,gamma=gamma)
+    Kx = FirstDerivative(n,kind='forward',dir=0,edge=True)
+    Ky = FirstDerivative(n,kind='forward',dir=1,edge=True)
+    Kxp = Kx*p
+    Kyp = Ky*p
+    hx,hy = tv_smooth_subdiff(reconstruction.ravel(),gamma=gamma)
+    #grad = L*(reconstruction.ravel()-noisy.ravel())
+    grad = -(hx*Kxp + hy*Kyp)
+    grad = reverse_patch(grad,reg_parameter)
+    return grad
+
+def smooth_patch_reg_gradient_ds(ds_denoised,reg_parameter):
+    grad = 0
+    for img in ds_denoised.keys():
+        grad += smooth_patch_reg_gradient(ds_denoised[img][0],ds_denoised[img][1],ds_denoised[img][2],reg_parameter)
     return grad/len(ds_denoised)

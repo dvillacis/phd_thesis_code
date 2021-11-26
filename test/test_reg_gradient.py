@@ -22,19 +22,20 @@ class TestGradient(unittest.TestCase):
         # orig[lu:br,lu:br] = 1e-5
         # noisy = orig + noise_level * np.random.randn(t,t)
         # noisy = np.clip(noisy,0.0,1.0)
-        
-        par = np.arange(0.0154,0.0156,step=0.1e-4)
+        step = 1e-3
+        lb = 0.001
+        par = np.arange(0.001,0.03,step=step)
         grads=[]
         costs =[]
         fd_grads=[]
-        rec = denoise(noisy,1.0,0.01539,niter=5000)
+        rec = denoise(noisy,1.0,0.0009,niter=5000)
         c_ = l2_cost(orig,rec)
         for p in par:
             rec = denoise(noisy,1.0,p,niter=5000)
             c = l2_cost(orig,rec)
             g = scalar_reg_gradient(orig,noisy,rec,p,show=True)
             grads.append(g)
-            fd_g = (c-c_)/0.1e-4
+            fd_g = (c-c_)/step
             fd_grads.append(fd_g)
             print(f'p: {p:.5f}, c:{c:.7f}, g:{g}, fd_g:{fd_g}')
             costs.append(c)

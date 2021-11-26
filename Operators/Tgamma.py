@@ -2,13 +2,13 @@ import numpy as np
 from pylops import LinearOperator, FirstDerivative
 
 def phi(nu,gamma):
-    return np.where(nu<gamma,nu/(2*gamma**2)-2/gamma,1./nu)
+    return np.where(gamma*nu-1<=-1/(2*gamma),gamma,1./nu)
 
 def psi(nu,gamma):
-    return np.where(nu<gamma,1./(nu+gamma)/(2*gamma),-1./nu**3)
+    return np.where(gamma*nu-1<-1/(2*gamma),0,-1./nu**3)
 
 class Tgamma(LinearOperator):
-    def __init__(self, u, gamma=1e-5, dtype='float64'):
+    def __init__(self, u, gamma=1000, dtype='float64'):
         n = len(u)
         self.Kx = FirstDerivative(n,kind='centered',dir=0,edge=True)
         self.Ky = FirstDerivative(n,kind='centered',dir=1,edge=True)
