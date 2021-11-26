@@ -13,7 +13,7 @@ from Operators.Tgamma import Tgamma
 def scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False,tol=1e-10):
     nx,ny = original.shape
     n = nx*ny
-    K = pylops.Gradient(dims=(nx,ny),kind='centered',edge=True)
+    K = pylops.Gradient(dims=(nx,ny),kind='forward',edge=True)
     Id = pylops.Identity(n)
     L = pylops.Diagonal(reg_parameter * np.ones(2*n))
     Id2 = pylops.Identity(2*n)
@@ -24,10 +24,10 @@ def scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False,tol=1e-1
     A = pylops.Block([[Id,K.adjoint()],[-L*Inact*T,Inact+1e-8*Act]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
     #Amat = A.tosparse()
-    p = scipy.sparse.linalg.cg(A,b)
+    p = scipy.sparse.linalg.gmres(A,b)
     #p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),tol=1e-10)
     if show==True:
-        print(f'res:{np.linalg.norm(A*p-b)}')
+        print(f'res:{np.linalg.norm(A*p[0]-b)}')
         print(f'cg_out: {p[1:]}')
     adj = p[0][:n]
     #adj = p[:n]
@@ -37,8 +37,8 @@ def scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,show=False,t
     nx,ny = original.shape
     n = nx*ny
     p = scalar_reg_adjoint(original,reconstruction,reg_parameter,show=show,tol=tol)
-    Kx = FirstDerivative(n,kind='centered',dir=0,edge=True)
-    Ky = FirstDerivative(n,kind='centered',dir=1,edge=True)
+    Kx = FirstDerivative(n,kind='forward',dir=0,edge=True)
+    Ky = FirstDerivative(n,kind='forward',dir=1,edge=True)
     Kxu = Kx*reconstruction.ravel()
     Kyu = Ky*reconstruction.ravel()
     Kxp = Kx*p
@@ -62,15 +62,16 @@ def smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False,g
     L = pylops.Diagonal((reg_parameter) * np.ones(2*n))
     Id = pylops.Identity(2*n)
     Idn = pylops.Identity(n)
-    Z = pylops.Zero(n)
     Tg = Tgamma(reconstruction.ravel(),gamma=gamma)
     A = pylops.Block([[Idn,K.adjoint()],[-L*Tg,Id]])
     b = np.concatenate(((reconstruction.ravel()-original.ravel()),np.zeros(2*n)),axis=0)
-    p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=10)
-    if show==True:
-        print(f'cg_out: {p[1:]}')
-        print(f'res:{np.linalg.norm(A*p[0]-b)}')
+    p = scipy.sparse.linalg.gmres(A,b)
+    #p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=10)
+    # if show==True:
+    #     print(f'cg_out: {p[1:]}')
+    #     print(f'res:{np.linalg.norm(A*p[0]-b)}')
     return p[0][:n]
+    #return p[:n]
 
 def smooth_scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,gamma=1e-5,show=False):
     nx,ny = original.shape
@@ -83,7 +84,7 @@ def smooth_scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,gamma
     Kxp = Kx*p
     Kyp = Ky*p
     nKu = np.linalg.norm(np.vstack((Kxu,Kyu)).T,axis=1)
-    mul = np.where(nKu<gamma,gamma,1/nKu)
+    mul = np.where(nKu<gamma,nKu/gamma**2-1/gamma,1./nKu)
     hx = mul*Kxu
     hy = mul*Kyu
     #grad = L*(reconstruction.ravel()-noisy.ravel())

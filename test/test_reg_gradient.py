@@ -23,18 +23,25 @@ class TestGradient(unittest.TestCase):
         # noisy = orig + noise_level * np.random.randn(t,t)
         # noisy = np.clip(noisy,0.0,1.0)
         
-        par = np.arange(0.0153,0.0156,step=0.1e-4)
+        par = np.arange(0.0154,0.0156,step=0.1e-4)
         grads=[]
         costs =[]
+        fd_grads=[]
+        rec = denoise(noisy,1.0,0.01539,niter=5000)
+        c_ = l2_cost(orig,rec)
         for p in par:
-            rec = denoise(noisy,1.0,p,niter=1000)
+            rec = denoise(noisy,1.0,p,niter=5000)
             c = l2_cost(orig,rec)
             g = scalar_reg_gradient(orig,noisy,rec,p,show=True)
             grads.append(g)
-            print(f'p: {p:.4f}, c:{c:.7f}, g:{g}')
+            fd_g = (c-c_)/0.1e-4
+            fd_grads.append(fd_g)
+            print(f'p: {p:.5f}, c:{c:.7f}, g:{g}, fd_g:{fd_g}')
             costs.append(c)
+            c_ = c
         fig,ax = plt.subplots()
         ax.plot(par,grads,color='red')
+        ax.plot(par,fd_grads,color='green')
         ax2 = ax.twinx()
         ax2.plot(par,costs)
         ax.grid()

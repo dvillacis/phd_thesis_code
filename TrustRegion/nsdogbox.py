@@ -51,7 +51,7 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=None,threshold_
     nfev = 1
     njev = 0
     n_reg_jev = 0
-    B = BFGS(init_scale=0.01)
+    B = BFGS(init_scale=0.001)
     #B = BFGS()
     B.initialize(len(x),'hess')
     scale = np.ones_like(x0)
