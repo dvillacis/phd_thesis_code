@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from pylops import Gradient
-from Operators.norms import tv_smooth_subdiff
+from bilearning.Operators.norms import tv_smooth_subdiff
 
 class TestTVSubdiff(unittest.TestCase):
     def test_tvsubdiff(self):

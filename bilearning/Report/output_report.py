@@ -4,8 +4,9 @@ import numpy as np
 from PIL import Image
 from skimage.metrics import structural_similarity as ssim
 from skimage.metrics import peak_signal_noise_ratio as psnr
-from Learning.cost import l2_cost
-from Operators.patch import patch
+
+from bilearning.Learning.cost import l2_cost
+from bilearning.Operators.patch import patch
 
 def write_scalar_report(report_dir,optimal,optimal_ds):
     with open(os.path.join(report_dir,'summary.out'),'w') as s:

@@ -2,10 +2,10 @@ import numpy as np
 import pylops, pyproximal
 from PIL import Image
 
-from Dataset.load_dataset import load_ds_file
-from Operators.SDL2 import SDL2
-from Operators.SDL21 import SDL21
-from Operators.patch import patch
+from bilearning.Dataset.load_dataset import load_ds_file
+from bilearning.Operators.SDL2 import SDL2
+from bilearning.Operators.SDL21 import SDL21
+from bilearning.Operators.patch import patch
 
 def patch_denoise(noisy,data_parameter:np.ndarray,reg_parameter:np.ndarray,niter=100,show=False):
     nx,ny = noisy.shape

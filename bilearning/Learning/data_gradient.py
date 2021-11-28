@@ -1,10 +1,10 @@
 import numpy as np
-import pylops, pyproximal
-from Operators.Tgamma import Tgamma
+import pylops
 
-from Operators.operators import ActiveOp, InactiveOp
-from Operators.TOp import TOp
-from Operators.patch import patch, reverse_patch
+from bilearning.Operators.Tgamma import Tgamma
+from bilearning.Operators.operators import ActiveOp, InactiveOp
+from bilearning.Operators.TOp import TOp
+from bilearning.Operators.patch import patch, reverse_patch
 
 # DATA GRADIENT
 

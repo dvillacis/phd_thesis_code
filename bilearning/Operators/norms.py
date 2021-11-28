@@ -18,4 +18,5 @@ def tv_smooth_subdiff(u,gamma=1000):
     Kyu = Ky*u
     nu = np.linalg.norm(np.vstack((Kxu,Kyu)).T,axis=1)
     a = np.where(gamma*nu-1 <= -1/(2*gamma),gamma,1./nu)
-    return a*Kxu,a*Kyu
+    b = np.where((gamma*nu-1 > -1/(2*gamma)) & (gamma*nu-1 <= 1/(2*gamma)),1/nu*(1-0.5*gamma*(1-gamma*nu+1/(2*gamma**2)**2)),a)
+    return b*Kxu,b*Kyu

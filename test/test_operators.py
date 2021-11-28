@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from Operators.operators import ActiveOp,InactiveOp
+from bilearning.Operators.operators import ActiveOp,InactiveOp
 
 class OperatorsTest(unittest.TestCase):
     def test_activeop(self):

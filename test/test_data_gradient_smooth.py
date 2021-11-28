@@ -2,11 +2,11 @@ import unittest
 import numpy as np
 import matplotlib.pyplot as plt
 
-from TVDenoising.scalar_denoising import denoise
-from Learning.cost import l2_cost
-from Dataset.load_dataset import get_image_pair
-from Learning.data_gradient import smooth_scalar_data_gradient
-from Learning.reg_gradient import smooth_scalar_reg_gradient
+from bilearning.TVDenoising.scalar_denoising import denoise
+from bilearning.Learning.cost import l2_cost
+from bilearning.Dataset.load_dataset import get_image_pair
+from bilearning.Learning.data_gradient import smooth_scalar_data_gradient
+from bilearning.Learning.reg_gradient import smooth_scalar_reg_gradient
 
 class TestGradient(unittest.TestCase):
     def test_smooth_scalar_data_gradient(self):

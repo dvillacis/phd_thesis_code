@@ -3,8 +3,8 @@ import os
 import sys
 import numpy as np
 
-from Learning.optimization import find_optimal_data_scalar, find_optimal_data_patch
-from Report.output_report import write_scalar_report, write_patch_report
+from bilearning.Learning.optimization import find_optimal_data_scalar, find_optimal_data_patch
+from bilearning.Report.output_report import write_scalar_report, write_patch_report
 
 parser = argparse.ArgumentParser(prog='bilevel_data_learning',description='Bilevel Data Parameter Learning',epilog='Enjoy!')
 

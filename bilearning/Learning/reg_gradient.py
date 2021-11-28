@@ -4,11 +4,11 @@ from pylops import FirstDerivative
 import scipy
 import scipy.sparse
 
-from Operators.operators import ActiveOp, InactiveOp
-from Operators.TOp import TOp
-from Operators.patch import patch, reverse_patch
-from Operators.norms import pointwise_euclidean_norm,tv_smooth_subdiff
-from Operators.Tgamma import Tgamma
+from bilearning.Operators.operators import ActiveOp, InactiveOp
+from bilearning.Operators.TOp import TOp
+from bilearning.Operators.patch import patch, reverse_patch
+from bilearning.Operators.norms import pointwise_euclidean_norm,tv_smooth_subdiff
+from bilearning.Operators.Tgamma import Tgamma
 
 def scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False,tol=1e-10):
     nx,ny = original.shape

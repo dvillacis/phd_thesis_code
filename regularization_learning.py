@@ -6,8 +6,8 @@ import numpy as np
 
 warnings.filterwarnings('ignore')
 
-from Learning.optimization import find_optimal_reg_scalar, find_optimal_reg_patch
-from Report.output_report import write_scalar_report, write_patch_report
+from bilearning.Learning.optimization import find_optimal_reg_scalar, find_optimal_reg_patch
+from bilearning.Report.output_report import write_scalar_report, write_patch_report
 
 parser = argparse.ArgumentParser(prog='bilevel_regularization_learning',description='Bilevel Regularization Parameter Learning',epilog='Enjoy!')
 

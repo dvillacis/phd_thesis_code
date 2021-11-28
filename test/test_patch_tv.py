@@ -1,7 +1,7 @@
 import unittest
 from PIL import Image
 import numpy as np
-from TVDenoising.patch_denoising import patch_denoise, patch_denoise_ds
+from bilearning.TVDenoising.patch_denoising import patch_denoise, patch_denoise_ds
 
 class PatchTVTest(unittest.TestCase):
     def test_patch_denoise(self):

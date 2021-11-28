@@ -1,7 +1,7 @@
 import numpy as np
 from pylops import LinearOperator, Gradient
 from pylops.utils.backend import get_array_module
-from Operators.norms import pointwise_euclidean_norm
+from bilearning.Operators.norms import pointwise_euclidean_norm
 
 class ActiveOp(LinearOperator):
     def __init__(self, u, tol=1e-5, dtype='float64'):

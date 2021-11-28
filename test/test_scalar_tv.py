@@ -1,7 +1,7 @@
 import unittest
 from PIL import Image
 import numpy as np
-from TVDenoising.scalar_denoising import denoise, denoise_ds
+from bilearning.TVDenoising.scalar_denoising import denoise, denoise_ds
 
 class ScalarTVTest(unittest.TestCase):
     def test_denoise(self):

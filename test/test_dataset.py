@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from Dataset.load_dataset import load_ds_file
+from bilearning.Dataset.load_dataset import load_ds_file
 
 class DatasetTest(unittest.TestCase):
     def test_load(self):

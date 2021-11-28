@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from pylops import Gradient
-from Operators.Tgamma import Tgamma
+from bilearning.Operators.Tgamma import Tgamma
 
 class TestTgamma(unittest.TestCase):
     def test_tgamma(self):

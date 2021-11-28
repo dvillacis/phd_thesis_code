@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from Learning.optimization import find_optimal_data_scalar, find_optimal_data_patch
+from bilearning.Learning.optimization import find_optimal_data_scalar, find_optimal_data_patch
 
 class OptimizationTest(unittest.TestCase):
     # def test_data_learn(self):

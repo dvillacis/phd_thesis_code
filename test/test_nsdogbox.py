@@ -2,8 +2,8 @@ import unittest
 import warnings
 import numpy as np
 
-from TrustRegion.nsdogbox import nsdogbox
-from TrustRegion.step_finder import dogleg_step_finder,cauchy_point_step_finder
+from bilearning.TrustRegion.nsdogbox import nsdogbox
+from bilearning.TrustRegion.step_finder import dogleg_step_finder,cauchy_point_step_finder
 
 class TestNSDogbox(unittest.TestCase):
     def test_nsdogbox(self):

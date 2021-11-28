@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Dataset.load_dataset import get_image_pair
-from TVDenoising.scalar_denoising import denoise
-from Learning.cost import l2_cost
-from Learning.reg_gradient import smooth_scalar_reg_gradient, scalar_reg_gradient
+from bilearning.Dataset.load_dataset import get_image_pair
+from bilearning.TVDenoising.scalar_denoising import denoise
+from bilearning.Learning.cost import l2_cost
+from bilearning.Learning.reg_gradient import smooth_scalar_reg_gradient, scalar_reg_gradient
 
 orig,noisy = get_image_pair('datasets/cameraman_128_5/filelist.txt',0)
 par = np.arange(1e-7,0.08,step=0.09e-2)

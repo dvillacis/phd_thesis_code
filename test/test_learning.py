@@ -1,10 +1,10 @@
 import unittest
 import numpy as np
-from Learning.cost import l2_cost,l2_cost_ds, psnr_cost_ds, ssim_cost_ds
-from TVDenoising.scalar_denoising import denoise, denoise_ds
-from Learning.data_gradient import scalar_data_adjoint, scalar_data_gradient
-from Learning.reg_gradient import scalar_reg_gradient
-from Dataset.load_dataset import get_image_pair
+from bilearning.Learning.cost import l2_cost,l2_cost_ds, psnr_cost_ds, ssim_cost_ds
+from bilearning.TVDenoising.scalar_denoising import denoise, denoise_ds
+from bilearning.Learning.data_gradient import scalar_data_adjoint, scalar_data_gradient
+from bilearning.Learning.reg_gradient import scalar_reg_gradient
+from bilearning.Dataset.load_dataset import get_image_pair
 import matplotlib.pyplot as plt
 
 class LearningTest(unittest.TestCase):
