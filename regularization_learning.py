@@ -45,7 +45,7 @@ if parameter_type == 'scalar':
     if optimal.status == 1:
         print(f'Optimal parameter found:\n{optimal.x}')
     else:
-        print(f'{optimal.message}')
+        print(f'Learning finished with status: {optimal.message}')
     if report_dir != None:
         if not os.path.isdir(report_dir):
             os.makedirs(report_dir)
@@ -57,7 +57,7 @@ else:
     if optimal.status == 1:
         print(f'Optimal parameter found:\n{optimal.x}')
     else:
-        print(f'{optimal.message}')
+        print(f'Learning finished with status: {optimal.message}')
     if report_dir != None:
         if not os.path.isdir(report_dir):
             os.makedirs(report_dir)

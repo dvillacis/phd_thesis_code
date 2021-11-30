@@ -27,7 +27,7 @@ def print_header_dogbox():
           .format("Iteration", "Total nfev", "Cost", "Cost reduction",
                   "Step norm", "Optimality", "TR-Radius"))
 
-def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=None,threshold_radius=1e-5,verbose=0,xtol=1e-8,ftol=1e-8,gtol=1e-5,max_nfev=10000):
+def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=None,threshold_radius=1e-4,verbose=0,xtol=1e-8,ftol=1e-8,gtol=1e-5,max_nfev=10000):
 
     if not lb:
         lb = 1e-12*np.ones_like(x0)
@@ -162,4 +162,4 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=None,threshold_
 
     return OptimizeResult(
         x=x, fun=f, jac=g, grad=g_full, optimality=g_norm,
-        active_mask=on_bound, nfev=nfev, njev=njev, n_reg_jev=n_reg_jev, status=termination_status, message=termination_status)
+        active_mask=on_bound, nfev=nfev, njev=njev, n_reg_jev=n_reg_jev,nit=iteration, status=termination_status, message=termination_status)

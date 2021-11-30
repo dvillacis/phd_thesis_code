@@ -1,5 +1,7 @@
 __pycache__
 .DS_Store
 output
+experiments/alpha_initialization_reg_parameter
+experiments/patch_alpha_initialization_reg_parameter
 .vscode
 .ipynb_checkpoints
