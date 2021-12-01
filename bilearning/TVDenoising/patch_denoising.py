@@ -18,7 +18,8 @@ def patch_denoise(noisy,data_parameter:np.ndarray,reg_parameter:np.ndarray,niter
     L = 8.0 # TODO: Estimar mejor los parametros de cp
     tau = 1.0/np.sqrt(L)
     mu = 1.0/np.sqrt(L)
-    img = pyproximal.optimization.primaldual.PrimalDual(l2,l21,K,np.zeros_like(noisy.ravel()),tau,mu,niter=niter,show=show)
+    img,_ = pyproximal.optimization.primaldual.AdaptivePrimalDual(l2,l21,K,np.zeros_like(noisy.ravel()),tau,mu,niter=niter,show=show)
+    #img = pyproximal.optimization.primaldual.PrimalDual(l2,l21,K,np.zeros_like(noisy.ravel()),tau,mu,niter=niter,show=show)
     return np.reshape(img,noisy.shape)
 
 def patch_denoise_ds(dsfile,data_parameter:np.ndarray,reg_parameter:np.ndarray,niter=100,show=False):

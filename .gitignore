@@ -3,5 +3,10 @@ __pycache__
 output
 experiments/alpha_initialization_reg_parameter
 experiments/patch_alpha_initialization_reg_parameter
+experiments/faces_patch_increments_reg
+experiments/gamma_reg_parameter
+experiments/patch_increments_reg
+experiments/scalar_cameraman_reg
+experiments/scalar_faces_reg
 .vscode
 .ipynb_checkpoints

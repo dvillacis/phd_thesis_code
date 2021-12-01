@@ -38,6 +38,7 @@ $ python regularization_learning.py datasets/cameraman_128_5/filelist.txt -t pat
 2. -v/--verbose: Print evolution of iterations of the bilevel solver
 3. -i/--init: Initial value for the parameter
 4. -ps/--patch_size: Patch size of the parameter
+5. -g/--gamma: Smoothing parameter for the TV norm
 
 ### Example
 ```bash

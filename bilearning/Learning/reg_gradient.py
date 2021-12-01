@@ -86,10 +86,10 @@ def smooth_scalar_reg_gradient(original,noisy,reconstruction,reg_parameter,gamma
     grad = -np.sum(hx*Kxp + hy*Kyp)
     return grad
 
-def smooth_scalar_reg_gradient_ds(ds_denoised,reg_parameter):
+def smooth_scalar_reg_gradient_ds(ds_denoised,reg_parameter,gamma=100000):
     grad = 0
     for img in ds_denoised.keys():
-        grad += smooth_scalar_reg_gradient(ds_denoised[img][0],ds_denoised[img][1],ds_denoised[img][2],reg_parameter)
+        grad += smooth_scalar_reg_gradient(ds_denoised[img][0],ds_denoised[img][1],ds_denoised[img][2],reg_parameter,gamma=gamma)
     return grad/len(ds_denoised)
 
 # PATCH
