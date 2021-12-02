@@ -27,7 +27,7 @@ def print_header_dogbox():
           .format("Iteration", "Total nfev", "Cost", "Cost reduction",
                   "Step norm", "Optimality", "TR-Radius"))
 
-def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=None,threshold_radius=1e-4,verbose=0,xtol=1e-8,ftol=1e-8,gtol=1e-5,max_nfev=10000):
+def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=None,threshold_radius=1e-4,radius_tol=1e-9,verbose=0,xtol=1e-8,ftol=1e-8,gtol=1e-5,max_nfev=1000):
 
     if not lb:
         lb = 1e-12*np.ones_like(x0)
@@ -126,6 +126,8 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=None,threshold_
 
             step_norm = norm(step)
             termination_status = check_termination(actual_reduction,f,step_norm,norm(x),ratio,ftol,xtol)
+            if radius < radius_tol:
+                termination_status = 3
 
             if termination_status is not None:
                 break

@@ -4,9 +4,15 @@ output
 experiments/alpha_initialization_reg_parameter
 experiments/patch_alpha_initialization_reg_parameter
 experiments/faces_patch_increments_reg
+experiments/faces_patch_increments_reg_10
 experiments/gamma_reg_parameter
 experiments/patch_increments_reg
+experiments/patch_increments_reg_10
+experiments/patch_increments_reg_5
+experiments/cameraman_patch_increments_reg_5
 experiments/scalar_cameraman_reg
 experiments/scalar_faces_reg
+experiments/scalar_faces_reg_5
+experiments/scalar_faces_reg_10
 .vscode
 .ipynb_checkpoints

@@ -39,15 +39,15 @@ def find_optimal_data_scalar(dsfile,initial_data_parameter,show=False):
 #################################
 
 def reg_cost_fn_scalar(dsfile,reg_parameter):
-    den_ds = denoise_ds(dsfile,data_parameter=1.0,reg_parameter=reg_parameter,niter=5000)
+    den_ds = denoise_ds(dsfile,data_parameter=1.0,reg_parameter=reg_parameter,niter=100)
     return l2_cost_ds(den_ds)
 
 def reg_gradient_fn_scalar(dsfile,reg_parameter):
-    den_ds = denoise_ds(dsfile,data_parameter=1.0,reg_parameter=reg_parameter[0],niter=5000)
+    den_ds = denoise_ds(dsfile,data_parameter=1.0,reg_parameter=reg_parameter[0],niter=100)
     return np.array([scalar_reg_gradient_ds(den_ds,reg_parameter[0])])
 
 def smooth_reg_gradient_fn_scalar(dsfile,reg_parameter,gamma=100000):
-    den_ds = denoise_ds(dsfile,data_parameter=1.0,reg_parameter=reg_parameter[0],niter=5000)
+    den_ds = denoise_ds(dsfile,data_parameter=1.0,reg_parameter=reg_parameter[0],niter=100)
     return np.array([smooth_scalar_reg_gradient_ds(den_ds,reg_parameter[0],gamma=gamma)])
 
 def find_optimal_reg_scalar(dsfile,initial_reg_parameter,show=False,gamma=100000,threshold_radius=1e-4):
@@ -96,15 +96,15 @@ def find_optimal_data_patch(dsfile,initial_data_parameter,show=False):
 #################################
 
 def reg_cost_fn_patch(dsfile,reg_parameter):
-    den_ds = patch_denoise_ds(dsfile,data_parameter=np.ones(reg_parameter.shape),reg_parameter=reg_parameter,niter=5000)
+    den_ds = patch_denoise_ds(dsfile,data_parameter=np.ones(reg_parameter.shape),reg_parameter=reg_parameter,niter=1000)
     return l2_cost_ds(den_ds)
 
 def reg_gradient_fn_patch(dsfile,reg_parameter):
-    den_ds = patch_denoise_ds(dsfile,data_parameter=np.ones(reg_parameter.shape),reg_parameter=reg_parameter,niter=5000)
+    den_ds = patch_denoise_ds(dsfile,data_parameter=np.ones(reg_parameter.shape),reg_parameter=reg_parameter,niter=1000)
     return patch_reg_gradient_ds(den_ds,reg_parameter)
 
 def smooth_reg_gradient_fn_patch(dsfile,reg_parameter):
-    den_ds = patch_denoise_ds(dsfile,data_parameter=np.ones(reg_parameter.shape),reg_parameter=reg_parameter,niter=5000)
+    den_ds = patch_denoise_ds(dsfile,data_parameter=np.ones(reg_parameter.shape),reg_parameter=reg_parameter,niter=1000)
     return smooth_patch_reg_gradient_ds(den_ds,reg_parameter)
 
 def find_optimal_reg_patch(dsfile,initial_reg_parameter,show=False):
@@ -113,9 +113,9 @@ def find_optimal_reg_patch(dsfile,initial_reg_parameter,show=False):
         iprint = 2
     #bnds = scipy.optimize.Bounds(0.001*np.ones(initial_reg_parameter.ravel().shape),[np.inf]*len(initial_reg_parameter.ravel()))
     #optimal = scipy.optimize.minimize(fun=lambda x: reg_cost_fn_patch(dsfile,x),jac=lambda x:reg_gradient_fn_patch(dsfile,x),hess=scipy.optimize.SR1(),x0=initial_reg_parameter.ravel(),method='trust-constr',bounds=bnds,options={'verbose':iprint,'gtol':1e-6})
-    optimal = nsdogbox(fun=lambda x: reg_cost_fn_patch(dsfile,x),grad=lambda x:reg_gradient_fn_patch(dsfile,x),reg_grad=lambda x:smooth_reg_gradient_fn_patch(dsfile,x),x0=initial_reg_parameter.ravel(),verbose=iprint,initial_radius=0.001)
+    optimal = nsdogbox(fun=lambda x: reg_cost_fn_patch(dsfile,x),grad=lambda x:reg_gradient_fn_patch(dsfile,x),reg_grad=lambda x:smooth_reg_gradient_fn_patch(dsfile,x),x0=initial_reg_parameter.ravel(),verbose=iprint,initial_radius=0.01)
     if show == True:
         print(optimal)
     x = optimal.x
-    optimal_ds = patch_denoise_ds(dsfile,data_parameter=np.ones(x.shape),reg_parameter=x)
+    optimal_ds = patch_denoise_ds(dsfile,data_parameter=np.ones(x.shape),reg_parameter=x,niter=1000)
     return optimal,optimal_ds

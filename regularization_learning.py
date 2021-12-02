@@ -1,8 +1,8 @@
 import argparse
 import warnings
 import os
-import sys
 import numpy as np
+from ast import literal_eval
 
 warnings.filterwarnings('ignore')
 
@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser(prog='bilevel_regularization_learning',descript
 parser.add_argument('Dataset',metavar='dataset_file',type=str,help='Path to dataset file')
 parser.add_argument('-t','--type',metavar='parameter_type',type=str,help='Parameter type scalar/patch')
 parser.add_argument('-ps','--patch_size',metavar='patch_size',type=int,help='Patch parameter size')
-parser.add_argument('-i','--init',metavar='parameter_init',type=float,help='Parameter initial value scalar/patch')
+parser.add_argument('-i','--init',metavar='parameter_init',nargs='+',type=float,help='Parameter initial value scalar/patch')
 parser.add_argument('-o','--output',metavar='output_report_dir',type=str,help='Directory for storing output report')
 parser.add_argument('-v','--verbose',action='store_true',help='Verbosity level on optimization')
 parser.add_argument('-g','--gamma',metavar='smoothing_parameter', type=float, help='Smoothing parameter for the TV norm')
@@ -60,7 +60,9 @@ if parameter_type == 'scalar':
             print(f'Directory {report_dir} created successfully...')
         write_scalar_report(report_dir,optimal,optimal_ds)
 else:
-    paramater_initial_value = paramater_initial_value * np.ones((patch_size,patch_size))
+    paramater_initial_value = np.array(paramater_initial_value)
+    # print(f'parameter shape:{paramater_initial_value.shape}')
+    #paramater_initial_value = paramater_initial_value * np.ones((patch_size,patch_size))
     optimal,optimal_ds = find_optimal_reg_patch(dataset_file,paramater_initial_value,show=show)
     if optimal.status == 1:
         print(f'Optimal parameter found:\n{optimal.x}')

@@ -24,7 +24,7 @@ def scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False,tol=1e-1
     A = pylops.Block([[Id,K.adjoint()],[-L*Inact*T,Inact+1e-10*Act]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
     #Amat = A.tosparse()
-    p = scipy.sparse.linalg.gmres(A,b)
+    p = scipy.sparse.linalg.gmres(A,b,atol='legacy',maxiter=100)
     #p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),tol=1e-10)
     if show==True:
         print(f'res:{np.linalg.norm(A*p[0]-b)}')
@@ -65,7 +65,7 @@ def smooth_scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False,g
     Tg = Tgamma(reconstruction.ravel(),gamma=gamma)
     A = pylops.Block([[Idn,K.adjoint()],[-L*Tg,Id]])
     b = np.concatenate(((reconstruction.ravel()-original.ravel()),np.zeros(2*n)),axis=0)
-    p = scipy.sparse.linalg.gmres(A,b,atol='legacy')
+    p = scipy.sparse.linalg.gmres(A,b,atol='legacy',maxiter=100)
     #p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=10)
     if show==True:
         print(f'cg_out: {p[1:]}')
@@ -107,7 +107,7 @@ def patch_reg_adjoint(original,reconstruction,reg_parameter:np.ndarray,show=Fals
     Inact = InactiveOp(reconstruction)
     A = pylops.Block([[Id,K.adjoint()],[-L*T,Inact + 1e-5*Act]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
-    p = scipy.sparse.linalg.gmres(A,b,atol='legacy')
+    p = scipy.sparse.linalg.gmres(A,b,atol='legacy',maxiter=100)
     # p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),tol=1e-4)
     if show==True:
         print(f'res:{np.linalg.norm(A*p[0]-b)}')
@@ -149,7 +149,7 @@ def smooth_patch_reg_adjoint(original,reconstruction,reg_parameter,show=False,ga
     Tg = Tgamma(reconstruction.ravel(),gamma=gamma)
     A = pylops.Block([[Idn,K.adjoint()],[-L*Tg,Id]])
     b = np.concatenate(((reconstruction.ravel()-original.ravel()),np.zeros(2*n)),axis=0)
-    p = scipy.sparse.linalg.gmres(A,b,atol='legacy')
+    p = scipy.sparse.linalg.gmres(A,b,atol='legacy',maxiter=100)
     #p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=10)
     if show==True:
         print(f'cg_out: {p[1:]}')
