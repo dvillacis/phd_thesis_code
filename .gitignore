@@ -14,5 +14,11 @@ experiments/scalar_cameraman_reg
 experiments/scalar_faces_reg
 experiments/scalar_faces_reg_5
 experiments/scalar_faces_reg_10
+experiments/data_experiments/2d_plot_cameraman
+experiments/data_experiments/2d_plot_faces
+experiments/data_experiments/patch_increments_cameraman
+experiments/data_experiments/patch_increments_faces
+experiments/data_experiments/scalar_plot_cameraman
+experiments/data_experiments/scalar_plot_faces
 .vscode
 .ipynb_checkpoints

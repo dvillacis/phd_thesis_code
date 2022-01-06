@@ -5,12 +5,12 @@ from PIL import Image
 from bilearning.Dataset.load_dataset import load_ds_file
 from bilearning.Operators.SDL2 import SDL2
 from bilearning.Operators.SDL21 import SDL21
-from bilearning.Operators.patch import patch
+from bilearning.Operators.patch import Patch
 
-def patch_denoise(noisy,data_parameter:np.ndarray,reg_parameter:np.ndarray,niter=100,show=False):
+def patch_denoise(noisy,data_parameter:Patch,reg_parameter:Patch,niter=100,show=False):
     nx,ny = noisy.shape
-    data_parameter = patch(data_parameter,noisy)
-    reg_parameter = patch(reg_parameter,noisy)
+    data_parameter = data_parameter.map_to_img(noisy)
+    reg_parameter = reg_parameter.map_to_img(noisy)
     
     K = pylops.Gradient(dims=(nx,ny),kind='forward')
     l2 = SDL2(noisy.ravel(),sigma=data_parameter.ravel())
@@ -22,7 +22,7 @@ def patch_denoise(noisy,data_parameter:np.ndarray,reg_parameter:np.ndarray,niter
     #img = pyproximal.optimization.primaldual.PrimalDual(l2,l21,K,np.zeros_like(noisy.ravel()),tau,mu,niter=niter,show=show)
     return np.reshape(img,noisy.shape)
 
-def patch_denoise_ds(dsfile,data_parameter:np.ndarray,reg_parameter:np.ndarray,niter=100,show=False):
+def patch_denoise_ds(dsfile,data_parameter:Patch,reg_parameter:Patch,niter=100,show=False):
     ds = load_ds_file(dsfile)
     reconstruction = {}
     for img in ds.keys():

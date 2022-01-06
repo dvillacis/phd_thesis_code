@@ -1,9 +1,12 @@
 import numpy as np
 from numpy.linalg import norm, lstsq
+from pyproximal import proximal
 from scipy.optimize._lsq.dogbox import dogleg_step,find_intersection
 from scipy.optimize._lsq.common import step_size_to_bound,in_bounds,update_tr_radius,evaluate_quadratic,build_quadratic_1d,minimize_quadratic_1d,check_termination
 from scipy.optimize import BFGS, SR1
 from scipy.optimize import OptimizeResult
+
+from bilearning.Operators.patch import Patch
 
 def print_iteration_dogbox(iteration, nfev, cost, cost_reduction,
                               step_norm, optimality,radius):
@@ -27,22 +30,24 @@ def print_header_dogbox():
           .format("Iteration", "Total nfev", "Cost", "Cost reduction",
                   "Step norm", "Optimality", "TR-Radius"))
 
-def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=None,threshold_radius=1e-4,radius_tol=1e-9,verbose=0,xtol=1e-8,ftol=1e-8,gtol=1e-5,max_nfev=1000):
+def nsdogbox(fun,grad,reg_grad,x0:Patch,lb=None,ub=None,initial_radius=None,threshold_radius=1e-4,radius_tol=1e-9,verbose=0,xtol=1e-9,ftol=1e-9,gtol=1e-9,max_nfev=1000):
 
     if not lb:
-        lb = 1e-12*np.ones_like(x0)
+        lb = 1e-12
     if not ub:
-        ub = np.ones_like(x0) * np.inf
+        ub = np.ones_like(x0.data) * np.inf
 
-    on_bound = np.zeros_like(x0,dtype=int)
-    on_bound[np.equal(x0,lb)] = -1
-    on_bound[np.equal(x0,ub)] = 1
+    lb = lb * np.ones_like(x0.data)
 
-    x = x0
-    step = np.empty_like(x0)
+    on_bound = np.zeros_like(x0.data,dtype=int)
+    on_bound[np.equal(x0.data,lb)] = -1
+    on_bound[np.equal(x0.data,ub)] = 1
+
+    x = x0.copy()
+    step = np.empty_like(x0.data)
     radius = initial_radius
     if radius == None:
-        radius = norm(x0, ord=np.inf)
+        radius = norm(x0.data, ord=np.inf)
 
     termination_status = None
     iteration = 0
@@ -53,8 +58,8 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=None,threshold_
     n_reg_jev = 0
     B = BFGS(init_scale=1e-10)
     # B = BFGS()
-    B.initialize(len(x),'hess')
-    scale = np.ones_like(x0)
+    B.initialize(len(x.data),'hess')
+    scale = np.ones_like(x0.data)
     scaleinv = 1/scale
 
     if verbose == 2:
@@ -85,7 +90,7 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=None,threshold_
         if termination_status is not None or nfev == max_nfev:
             break
 
-        x_free = x[free_set]
+        x_free = x.data[free_set]
         lb_free = lb[free_set]
         ub_free = ub[free_set]
         scale_free = scale[free_set]
@@ -105,7 +110,8 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=None,threshold_
 
             predicted_reduction = -evaluate_quadratic(B_free,g_free,step_free)
 
-            x_new = np.clip(x + step, lb, ub)
+            x_new = np.clip(x.data + step, lb, ub)
+            x_new = Patch(x_new,x0.px,x0.py)
 
             f_new = fun(x_new)
             nfev += 1
@@ -125,7 +131,7 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=None,threshold_
                 #radius = norm(x)
 
             step_norm = norm(step)
-            termination_status = check_termination(actual_reduction,f,step_norm,norm(x),ratio,ftol,xtol)
+            termination_status = check_termination(actual_reduction,f,step_norm,norm(x.data),ratio,ftol,xtol)
             if radius < radius_tol:
                 termination_status = 3
 
@@ -135,12 +141,12 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=None,threshold_
         if actual_reduction > 0:
             on_bound[free_set] = on_bound_free
 
-            x = x_new
+            x = x_new.copy()
 
             mask = on_bound == -1
-            x[mask] = lb[mask]
+            x.data[mask] = lb[mask]
             mask = on_bound == 1
-            x[mask] = ub[mask]
+            x.data[mask] = ub[mask]
 
             f = f_new
 
@@ -153,7 +159,7 @@ def nsdogbox(fun,grad,reg_grad,x0,lb=None,ub=None,initial_radius=None,threshold_
                 n_reg_jev += 1
                 g = reg_grad(x_new)
         else:
-            B.initialize(len(x),'hess')
+            B.initialize(len(x.data),'hess')
             step_norm = 0
             actual_reduction = 0
 

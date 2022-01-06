@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 
 def open_image(path):
-    img = np.array(Image.open(path))
+    img = np.array(Image.open(path.strip()))
     img = img/np.max(img)
     return img
 

@@ -38,7 +38,7 @@ def write_patch_report(report_dir,optimal,optimal_ds):
         #s.write(f'{optimal}')
         
     with open(os.path.join(report_dir,'quality.out'),'w') as q:
-        q.write(f'optimal data parameter: {optimal.x.tolist()}\n')
+        q.write(f'optimal data parameter: {optimal.x.data.tolist()}\n')
         q.write('img_num\tl2_noisy\tl2_rec\tpsnr_noisy\tpsnr_rec\tssim_noisy\tssim_rec\n')
         img_num=0
         for k in optimal_ds.keys():
@@ -46,7 +46,7 @@ def write_patch_report(report_dir,optimal,optimal_ds):
             original = optimal_ds[k][0]
             noisy = optimal_ds[k][1]
             rec = optimal_ds[k][2]
-            x_img = patch(optimal.x,original)
+            x_img = optimal.x.map_to_img(original).reshape(original.shape)
             x_img = (x_img.reshape(original.shape))/np.max(x_img)
             l2_noisy = l2_cost(original,noisy)
             l2_rec = l2_cost(original,rec)

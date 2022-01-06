@@ -1,3 +1,4 @@
+from PIL.Image import init
 import numpy as np
 import scipy
 from bilearning.Learning.cost import l2_cost_ds
@@ -6,21 +7,22 @@ from bilearning.TVDenoising.patch_denoising import patch_denoise_ds
 from bilearning.Learning.data_gradient import scalar_data_gradient_ds, patch_data_gradient_ds, smooth_scalar_data_gradient_ds, smooth_patch_data_gradient_ds
 from bilearning.Learning.reg_gradient import scalar_reg_gradient_ds, patch_reg_gradient_ds, smooth_scalar_reg_gradient_ds, smooth_patch_reg_gradient_ds
 from bilearning.TrustRegion.nsdogbox import nsdogbox
+from bilearning.Operators.patch import OnesPatch, Patch
 
 #################################
 # SCALAR DATA PARAMETER LEARNING
 #################################
 
 def data_cost_fn_scalar(dsfile,data_parameter):
-    den_ds = denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=1.0,niter=10000)
+    den_ds = denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=1.0,niter=1000)
     return l2_cost_ds(den_ds)
 
 def data_gradient_fn_scalar(dsfile,data_parameter):
-    den_ds = denoise_ds(dsfile,data_parameter=data_parameter[0],reg_parameter=1.0,niter=10000)
+    den_ds = denoise_ds(dsfile,data_parameter=data_parameter[0],reg_parameter=1.0,niter=1000)
     return np.array([scalar_data_gradient_ds(den_ds,data_parameter[0])])
 
 def smooth_data_gradient_fn_scalar(dsfile,data_parameter):
-    den_ds = denoise_ds(dsfile,data_parameter=data_parameter[0],reg_parameter=1.0,niter=10000)
+    den_ds = denoise_ds(dsfile,data_parameter=data_parameter[0],reg_parameter=1.0,niter=1000)
     return np.array([smooth_scalar_data_gradient_ds(den_ds,data_parameter[0])])
 
 def find_optimal_data_scalar(dsfile,initial_data_parameter,show=False):
@@ -64,31 +66,31 @@ def find_optimal_reg_scalar(dsfile,initial_reg_parameter,show=False,gamma=100000
 # PATCH DATA PARAMETER LEARNING
 #################################
 
-def data_cost_fn_patch(dsfile,data_parameter:np.ndarray):
-    den_ds = patch_denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=np.ones(data_parameter.shape),niter=5000)
+def data_cost_fn_patch(dsfile,data_parameter:Patch):
+    den_ds = patch_denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=OnesPatch(data_parameter.px,data_parameter.py),niter=1000)
     return l2_cost_ds(den_ds)
 
-def data_gradient_fn_patch(dsfile,data_parameter:np.ndarray):
-    den_ds = patch_denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=np.ones(data_parameter.shape),niter=5000)
+def data_gradient_fn_patch(dsfile,data_parameter:Patch):
+    den_ds = patch_denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=OnesPatch(data_parameter.px,data_parameter.py),niter=1000)
     grad = patch_data_gradient_ds(den_ds,data_parameter)
     return grad
 
-def smooth_data_gradient_fn_patch(dsfile,data_parameter:np.ndarray):
-    den_ds = patch_denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=np.ones(data_parameter.shape),niter=5000)
+def smooth_data_gradient_fn_patch(dsfile,data_parameter:Patch):
+    den_ds = patch_denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=OnesPatch(data_parameter.px,data_parameter.py),niter=1000)
     grad = smooth_patch_data_gradient_ds(den_ds,data_parameter)
     return grad
 
-def find_optimal_data_patch(dsfile,initial_data_parameter,show=False):
+def find_optimal_data_patch(dsfile,initial_data_parameter:Patch,show=False):
     iprint = 0
     if show == True:
         iprint = 2
-    #bnds = scipy.optimize.Bounds(0.001*np.ones(initial_data_parameter.ravel().shape),[np.inf]*len(initial_data_parameter.ravel()))
-    optimal = nsdogbox(fun=lambda x: data_cost_fn_patch(dsfile,x),grad=lambda x:data_gradient_fn_patch(dsfile,x),reg_grad=lambda x:smooth_data_gradient_fn_patch(dsfile,x),x0=initial_data_parameter.ravel(),verbose=iprint)
-    #optimal = scipy.optimize.minimize(fun=lambda x: data_cost_fn_patch(dsfile,x),jac=lambda x:data_gradient_fn_patch(dsfile,x),x0=initial_data_parameter.ravel(),hess=scipy.optimize.SR1(),method='trust-constr',bounds=bnds,options={'verbose':iprint,'gtol':1e-4})
+
+    optimal = nsdogbox(fun=lambda x: data_cost_fn_patch(dsfile,x),grad=lambda x:data_gradient_fn_patch(dsfile,x),reg_grad=lambda x:smooth_data_gradient_fn_patch(dsfile,x),x0=initial_data_parameter,verbose=iprint,lb=1.0)
+
     if show == True:
         print(optimal)
     x = optimal.x
-    optimal_ds = patch_denoise_ds(dsfile,data_parameter=x,reg_parameter=np.ones(x.shape))
+    optimal_ds = patch_denoise_ds(dsfile,data_parameter=x,reg_parameter=OnesPatch(x.px,x.py))
     return optimal,optimal_ds
 
 #################################
