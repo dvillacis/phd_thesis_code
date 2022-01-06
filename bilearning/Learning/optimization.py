@@ -85,7 +85,7 @@ def find_optimal_data_patch(dsfile,initial_data_parameter:Patch,show=False):
     if show == True:
         iprint = 2
 
-    optimal = nsdogbox(fun=lambda x: data_cost_fn_patch(dsfile,x),grad=lambda x:data_gradient_fn_patch(dsfile,x),reg_grad=lambda x:smooth_data_gradient_fn_patch(dsfile,x),x0=initial_data_parameter,verbose=iprint,lb=1.0)
+    optimal = nsdogbox(fun=lambda x: data_cost_fn_patch(dsfile,x),grad=lambda x:data_gradient_fn_patch(dsfile,x),reg_grad=lambda x:smooth_data_gradient_fn_patch(dsfile,x),x0=initial_data_parameter,verbose=iprint,lb=1.0,initial_radius=0.1)
 
     if show == True:
         print(optimal)
