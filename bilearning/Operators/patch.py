@@ -20,7 +20,7 @@ class Patch:
         mx = nx//self.px
         my = ny//self.py
         result = np.add.reduceat(np.add.reduceat(img, np.arange(0, img.shape[0], mx), axis=0),np.arange(0, img.shape[1], my), axis=1)
-        #return (result/(mx*my)).ravel()
+        #return (result/mx).ravel()
         return result.ravel()
     def __str__(self) -> str:
         return f'Patch ({self.data},{self.px},{self.py})'

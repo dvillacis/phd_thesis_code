@@ -6,8 +6,8 @@ sys.path.append('../../')
 
 from bilearning.Operators.patch import Patch
 
-nrows = np.array([2,4,8,16,32])
-lambda0 = 64.53125*np.ones(4)
+nrows = np.array([32])
+lambda0 = 100.0*np.ones(nrows[0]**2)
 
 out_dir = 'patch_increments_cameraman'
 if not os.path.isdir(out_dir):
@@ -47,4 +47,5 @@ with open(summary_table_dir,'w+') as f:
 
         if j < len(nrows):
             p = Patch(lambda_opt,r,r)
-            lambda0 = p.map_to_img(np.ones((nrows[j],nrows[j])))
+            #lambda0 = p.map_to_img(np.ones((nrows[j],nrows[j])))
+            lambda0 = 64.5*np.ones(nrows[j]**2)

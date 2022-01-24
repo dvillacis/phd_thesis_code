@@ -83,27 +83,27 @@ def patch_data_adjoint(original,reconstruction,data_parameter:Patch,show=False):
     data_parameter = data_parameter.map_to_img(original)
     nx,ny = original.shape
     n = nx*ny
-    K = pylops.Gradient(dims=(nx,ny),kind='forward')
+    K = pylops.Gradient(dims=(nx,ny),kind='centered')
     L = pylops.Diagonal(data_parameter)
     Id = pylops.Identity(2*n)
     Z = pylops.Zero(n)
     T = TOp(reconstruction.ravel())
     Act = ActiveOp(reconstruction)
     Inact = InactiveOp(reconstruction)
-    A = pylops.Block([[L,K.adjoint()],[Act*K-Inact*T,Inact+1e-8*Act]])
+    A = pylops.Block([[L,K.adjoint()],[Act*K-Inact*T,Inact+1e-5*Act]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
     #p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=len(data_parameter)+10)
-    p = scipy.sparse.linalg.gmres(A, b, atol='legacy', maxiter=1000)
+    p = scipy.sparse.linalg.gmres(A, b, atol='legacy', maxiter=2000)
     if show==True:
         print(p[1:])
     return p[0][:n]
 
 def patch_data_gradient(original,noisy,reconstruction,data_parameter:Patch):
     p = patch_data_adjoint(original,reconstruction,data_parameter)
-    L = pylops.Diagonal(p)
-    grad = L*(reconstruction.ravel()-noisy.ravel())
+    #L = pylops.Diagonal(p)
+    grad = -p*(reconstruction.ravel()-noisy.ravel())
     grad = data_parameter.reduce_from_img(grad.reshape(original.shape))
-    return -grad
+    return grad
 
 def patch_data_gradient_ds(ds_denoised,data_parameter:Patch):
     grad = 0
@@ -124,7 +124,7 @@ def smooth_patch_data_adjoint(original,reconstruction,data_parameter:Patch,show=
     Z = pylops.Zero(n)
     Tg = Tgamma(reconstruction.ravel())
     A = pylops.Block([[L,K.adjoint()],[-Tg,Id]])
-    b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
+    b = np.concatenate((-reconstruction.ravel()+original.ravel(),np.zeros(2*n)),axis=0)
     #p = pylops.optimization.solver.cg(A,b,np.zeros_like(b))
     p = scipy.sparse.linalg.gmres(A, b, atol='legacy', maxiter=1000)
     if show==True:
@@ -135,9 +135,9 @@ def smooth_patch_data_adjoint(original,reconstruction,data_parameter:Patch,show=
 def smooth_patch_data_gradient(original,noisy,reconstruction,data_parameter:Patch,show=False):
     p = smooth_patch_data_adjoint(original,reconstruction,data_parameter,show=show)
     L = pylops.Diagonal(p)
-    grad = L*(reconstruction.ravel()-noisy.ravel())
+    grad = -L*(reconstruction.ravel()-noisy.ravel())
     grad = data_parameter.reduce_from_img(grad.reshape(original.shape))
-    return -grad
+    return grad
 
 def smooth_patch_data_gradient_ds(ds_denoised,data_parameter:Patch):
     grad = 0

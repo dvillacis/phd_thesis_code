@@ -30,7 +30,7 @@ def print_header_dogbox():
           .format("Iteration", "Total nfev", "Cost", "Cost reduction",
                   "Step norm", "Optimality", "TR-Radius"))
 
-def nsdogbox(fun,grad,reg_grad,x0:Patch,lb=None,ub=None,initial_radius=None,threshold_radius=1e-4,radius_tol=1e-9,verbose=0,xtol=1e-9,ftol=1e-9,gtol=1e-9,max_nfev=1000):
+def nsdogbox(fun,grad,reg_grad,x0:Patch,lb=None,ub=None,initial_radius=None,threshold_radius=1e-4,radius_tol=1e-9,verbose=0,xtol=1e-9,ftol=1e-9,gtol=1e-9,max_nfev=1000,max_radius=10):
 
     if not lb:
         lb = 1e-12
@@ -126,6 +126,8 @@ def nsdogbox(fun,grad,reg_grad,x0:Patch,lb=None,ub=None,initial_radius=None,thre
 
             radius, ratio = update_tr_radius(radius,actual_reduction,predicted_reduction,step_h_norm,tr_hit)
 
+            if radius>max_radius:
+                radius = max_radius
             # if radius < 1e-6:
             #     B.initialize(len(x),'hess')
                 #radius = norm(x)

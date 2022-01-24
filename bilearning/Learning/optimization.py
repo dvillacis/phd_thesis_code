@@ -67,16 +67,16 @@ def find_optimal_reg_scalar(dsfile,initial_reg_parameter,show=False,gamma=100000
 #################################
 
 def data_cost_fn_patch(dsfile,data_parameter:Patch):
-    den_ds = patch_denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=OnesPatch(data_parameter.px,data_parameter.py),niter=1000)
+    den_ds = patch_denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=OnesPatch(data_parameter.px,data_parameter.py),niter=3000)
     return l2_cost_ds(den_ds)
 
 def data_gradient_fn_patch(dsfile,data_parameter:Patch):
-    den_ds = patch_denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=OnesPatch(data_parameter.px,data_parameter.py),niter=1000)
+    den_ds = patch_denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=OnesPatch(data_parameter.px,data_parameter.py),niter=3000)
     grad = patch_data_gradient_ds(den_ds,data_parameter)
     return grad
 
 def smooth_data_gradient_fn_patch(dsfile,data_parameter:Patch):
-    den_ds = patch_denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=OnesPatch(data_parameter.px,data_parameter.py),niter=1000)
+    den_ds = patch_denoise_ds(dsfile,data_parameter=data_parameter,reg_parameter=OnesPatch(data_parameter.px,data_parameter.py),niter=3000)
     grad = smooth_patch_data_gradient_ds(den_ds,data_parameter)
     return grad
 
@@ -85,7 +85,7 @@ def find_optimal_data_patch(dsfile,initial_data_parameter:Patch,show=False):
     if show == True:
         iprint = 2
 
-    optimal = nsdogbox(fun=lambda x: data_cost_fn_patch(dsfile,x),grad=lambda x:data_gradient_fn_patch(dsfile,x),reg_grad=lambda x:smooth_data_gradient_fn_patch(dsfile,x),x0=initial_data_parameter,verbose=iprint,lb=1.0)
+    optimal = nsdogbox(fun=lambda x: data_cost_fn_patch(dsfile,x),grad=lambda x:data_gradient_fn_patch(dsfile,x),reg_grad=lambda x:smooth_data_gradient_fn_patch(dsfile,x),x0=initial_data_parameter,verbose=iprint,initial_radius=1,max_radius=100)
 
     if show == True:
         print(optimal)
