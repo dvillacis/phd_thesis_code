@@ -6,10 +6,10 @@ sys.path.append('../../')
 
 from bilearning.Operators.patch import Patch
 
-nrows = np.array([2,4,8,16,32])
-lambda0 = np.array([14.138499,14.138499,14.138499,14.138499])
+nrows = np.array([1,2,4,8,16,32,64])
+lambda0 = 60.0*np.ones(nrows[0]**2)
 
-out_dir = 'patch_increments_faces'
+out_dir = 'patch_increments_cameraman_10'
 if not os.path.isdir(out_dir):
     os.mkdir(out_dir)
 summary_table_dir = os.path.join(out_dir, 'summary_table.csv')
@@ -19,8 +19,8 @@ with open(summary_table_dir,'w+') as f:
     for r in nrows:
         j+=1
         print(f'Executing the patch increment experiment with patch size:{r}x{r}')
-        cmd = f'python ../../data_learning.py ../../datasets/faces_val_128_10/filelist.txt -t patch -prows {str(r)} -pdata {str(lambda0.tolist()).strip("[]").replace(",","")} -o {os.path.join(out_dir,str(r))} -v'
-        print(cmd)
+        cmd = f'python ../../data_learning.py ../../datasets/cameraman_128_10/filelist.txt -t patch -prows {str(r)} -pdata {str(lambda0.tolist()).strip("[]").replace(",","")} -o {os.path.join(out_dir,str(r))} -v'
+        print(cmd[:80])
         os.system(cmd)
         ex_summary_path = os.path.join(out_dir, str(r), 'summary.out')
         ex_quality_path = os.path.join(out_dir, str(r), 'quality.out')
@@ -48,3 +48,4 @@ with open(summary_table_dir,'w+') as f:
         if j < len(nrows):
             p = Patch(lambda_opt,r,r)
             lambda0 = p.map_to_img(np.ones((nrows[j],nrows[j])))
+            #lambda0 = 100.0*np.ones(nrows[j]**2)

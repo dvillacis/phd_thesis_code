@@ -58,6 +58,7 @@ def write_patch_report(report_dir,optimal,optimal_ds):
             Image.fromarray(original*255).convert('L').save(os.path.join(report_dir,f'original_{img_num}.png'))
             Image.fromarray(noisy*255).convert('L').save(os.path.join(report_dir,f'noisy_{img_num}.png'))
             Image.fromarray(rec*255).convert('L').save(os.path.join(report_dir,f'rec_{img_num}.png'))
-            Image.fromarray(((x_img-x_img.min())/(x_img.max()-x_img.min()))*255).convert('L').save(os.path.join(report_dir,f'par_{img_num}.png'))
+            if len(x_img)>1:
+                Image.fromarray(((x_img-x_img.min())/(x_img.max()-x_img.min()))*255).convert('L').save(os.path.join(report_dir,f'par_{img_num}.png'))
 
 

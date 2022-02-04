@@ -6,8 +6,8 @@ sys.path.append('../../')
 
 from bilearning.Operators.patch import Patch
 
-nrows = np.array([32])
-lambda0 = 100.0*np.ones(nrows[0]**2)
+nrows = np.array([1,2,4,8,16,32,64])
+lambda0 = 60.0*np.ones(nrows[0]**2)
 
 out_dir = 'patch_increments_cameraman'
 if not os.path.isdir(out_dir):
@@ -20,7 +20,7 @@ with open(summary_table_dir,'w+') as f:
         j+=1
         print(f'Executing the patch increment experiment with patch size:{r}x{r}')
         cmd = f'python ../../data_learning.py ../../datasets/cameraman_128_5/filelist.txt -t patch -prows {str(r)} -pdata {str(lambda0.tolist()).strip("[]").replace(",","")} -o {os.path.join(out_dir,str(r))} -v'
-        print(cmd)
+        print(cmd[:80])
         os.system(cmd)
         ex_summary_path = os.path.join(out_dir, str(r), 'summary.out')
         ex_quality_path = os.path.join(out_dir, str(r), 'quality.out')
@@ -47,5 +47,5 @@ with open(summary_table_dir,'w+') as f:
 
         if j < len(nrows):
             p = Patch(lambda_opt,r,r)
-            #lambda0 = p.map_to_img(np.ones((nrows[j],nrows[j])))
-            lambda0 = 64.5*np.ones(nrows[j]**2)
+            lambda0 = p.map_to_img(np.ones((nrows[j],nrows[j])))
+            #lambda0 = 100.0*np.ones(nrows[j]**2)

@@ -93,7 +93,7 @@ def patch_data_adjoint(original,reconstruction,data_parameter:Patch,show=False):
     A = pylops.Block([[L,K.adjoint()],[Act*K-Inact*T,Inact+1e-5*Act]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
     #p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=len(data_parameter)+10)
-    p = scipy.sparse.linalg.gmres(A, b, atol='legacy', maxiter=2000)
+    p = scipy.sparse.linalg.gmres(A, b, atol='legacy', maxiter=1000)
     if show==True:
         print(p[1:])
     return p[0][:n]

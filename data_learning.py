@@ -43,6 +43,7 @@ if not os.path.isfile(dataset_file):
     raise ValueError(f'Dataset file: {dataset_file} not found...')
 
 if parameter_type == 'scalar':
+    paramater_initial_value = Patch(np.array([paramater_initial_value]),1,1)
     optimal,optimal_ds = find_optimal_data_scalar(dataset_file,paramater_initial_value,show=show)
     if optimal.status == 1:
         print(f'Optimal parameter found:\n{optimal.x}')

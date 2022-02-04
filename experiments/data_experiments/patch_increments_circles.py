@@ -1,38 +1,42 @@
-import numpy as np
-import os, sys
-from ast import literal_eval
 
+import numpy as np
+import os
+import sys
 sys.path.append('../../')
+from ast import literal_eval
 
 from bilearning.Operators.patch import Patch
 
-nrows = np.array([2,4,8,16,32])
-lambda0 = np.array([14.138499,14.138499,14.138499,14.138499])
 
-out_dir = 'patch_increments_faces'
+
+nrows = np.array([1,2,4,8,16,32,64])
+lambda0 = 50.0*np.ones(nrows[0]**2)
+
+out_dir = 'patch_increments_circles_patches'
 if not os.path.isdir(out_dir):
     os.mkdir(out_dir)
 summary_table_dir = os.path.join(out_dir, 'summary_table.csv')
-with open(summary_table_dir,'w+') as f:
+with open(summary_table_dir, 'w+') as f:
     f.write('patch_size,fun,msg,nfev,njev,nregjev,nit,status,success,alpha_opt,l2_cost,psnr,ssim\n')
     j = 0
     for r in nrows:
-        j+=1
-        print(f'Executing the patch increment experiment with patch size:{r}x{r}')
-        cmd = f'python ../../data_learning.py ../../datasets/faces_val_128_10/filelist.txt -t patch -prows {str(r)} -pdata {str(lambda0.tolist()).strip("[]").replace(",","")} -o {os.path.join(out_dir,str(r))} -v'
-        print(cmd)
+        j += 1
+        print(
+            f'Executing the patch increment experiment with patch size:{r}x{r}')
+        cmd = f'python ../../data_learning.py ../../datasets/circles_128_10/filelist_patches.txt -t patch -prows {str(r)} -pdata {str(lambda0.tolist()).strip("[]").replace(",","")} -o {os.path.join(out_dir,str(r))} -v'
+        print(cmd[:80])
         os.system(cmd)
         ex_summary_path = os.path.join(out_dir, str(r), 'summary.out')
         ex_quality_path = os.path.join(out_dir, str(r), 'quality.out')
 
         info = [str(r)]
-        s = open(ex_summary_path,'r')
+        s = open(ex_summary_path, 'r')
         lines = s.readlines()
         for line in lines:
             l = line.split(':')
             info.append(l[1].strip())
 
-        qs = open(ex_quality_path,'r').readlines()
+        qs = open(ex_quality_path, 'r').readlines()
         lambda_opt_le = literal_eval(qs[0].split(':')[1].strip())
         lambda_opt = np.array(lambda_opt_le)
         print(lambda_opt.shape)
@@ -46,5 +50,6 @@ with open(summary_table_dir,'w+') as f:
         f.write(','.join(info))
 
         if j < len(nrows):
-            p = Patch(lambda_opt,r,r)
+            p = Patch(lambda_opt, r, r)
             lambda0 = p.map_to_img(np.ones((nrows[j],nrows[j])))
+            #lambda0 = 8.9*np.ones(nrows[j]**2)

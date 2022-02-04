@@ -5,6 +5,7 @@ from PIL import Image
 def open_image(path):
     img = np.array(Image.open(path.strip()))
     img = img/np.max(img)
+    img = (img-img.min())/(img.max()-img.min()) # Normalize
     return img
 
 def load_ds_file(dataset_file_path):
@@ -30,4 +31,13 @@ def get_image_pair(dataset_file_path,index):
             orig = open_image(orig_path)
             noisy = open_image(noisy_path)
             return (orig,noisy)
+
+def get_image_pair_by_key(dataset_file_path,key):
+    ds = load_ds_file(dataset_file_path)
+    if key in ds.keys():
+        orig_path = key
+        noisy_path = ds[key]
+        orig = open_image(orig_path)
+        noisy = open_image(noisy_path)
+        return (orig, noisy)
 
