@@ -90,10 +90,10 @@ def patch_data_adjoint(original,reconstruction,data_parameter:Patch,show=False):
     T = TOp(reconstruction.ravel())
     Act = ActiveOp(reconstruction)
     Inact = InactiveOp(reconstruction)
-    A = pylops.Block([[L,K.adjoint()],[Act*K-Inact*T,Inact+1e-5*Act]])
+    A = pylops.Block([[L,K.adjoint()],[Act*K-Inact*T,Inact+1e-9*Act]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
     #p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=len(data_parameter)+10)
-    p = scipy.sparse.linalg.gmres(A, b, atol='legacy', maxiter=1000)
+    p = scipy.sparse.linalg.gmres(A, b, atol='legacy', maxiter=3000)
     if show==True:
         print(p[1:])
     return p[0][:n]
@@ -126,7 +126,7 @@ def smooth_patch_data_adjoint(original,reconstruction,data_parameter:Patch,show=
     A = pylops.Block([[L,K.adjoint()],[-Tg,Id]])
     b = np.concatenate((-reconstruction.ravel()+original.ravel(),np.zeros(2*n)),axis=0)
     #p = pylops.optimization.solver.cg(A,b,np.zeros_like(b))
-    p = scipy.sparse.linalg.gmres(A, b, atol='legacy', maxiter=1000)
+    p = scipy.sparse.linalg.gmres(A, b, atol='legacy', maxiter=3000)
     if show==True:
         print(f'res:{np.linalg.norm(A*p[0]-b)}')
         print(f'cg_out: {p[1:]}')

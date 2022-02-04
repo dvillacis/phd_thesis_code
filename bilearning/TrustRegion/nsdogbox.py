@@ -56,8 +56,8 @@ def nsdogbox(fun,grad,reg_grad,x0:Patch,lb=None,ub=None,initial_radius=None,thre
     nfev = 1
     njev = 0
     n_reg_jev = 0
-    #B = BFGS(init_scale=1.0)
-    B = BFGS()
+    #B = BFGS(init_scale=1e-10)
+    B = SR1(init_scale=1e-10)
     B.initialize(len(x.data),'hess')
     scale = np.ones_like(x0.data)
     scaleinv = 1/scale
