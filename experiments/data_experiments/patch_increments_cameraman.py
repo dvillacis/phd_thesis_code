@@ -48,4 +48,4 @@ with open(summary_table_dir,'w+') as f:
         if j < len(nrows):
             p = Patch(lambda_opt,r,r)
             lambda0 = p.map_to_img(np.ones((nrows[j],nrows[j])))
-            #lambda0 = 100.0*np.ones(nrows[j]**2)
+            #lambda0 = 64.53125*np.ones(nrows[j]**2)
