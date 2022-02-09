@@ -30,14 +30,15 @@ def print_header_dogbox():
           .format("Iteration", "Total nfev", "Cost", "Cost reduction",
                   "Step norm", "Optimality", "TR-Radius"))
 
-def nsdogbox(fun,grad,reg_grad,x0:Patch,lb=None,ub=None,initial_radius=None,threshold_radius=1e-4,radius_tol=1e-9,verbose=0,xtol=1e-8,ftol=1e-8,gtol=1e-8,max_nfev=1000,max_radius=1000):
+def nsdogbox(fun,grad,reg_grad,x0:Patch,lb=None,ub=None,initial_radius=None,threshold_radius=1e-4,radius_tol=1e-9,verbose=0,xtol=1e-9,ftol=1e-9,gtol=1e-9,max_nfev=2000,max_radius=1000):
 
     if not lb:
         lb = 1e-12
     if not ub:
-        ub = np.ones_like(x0.data) * np.inf
+        ub = np.inf
 
     lb = lb * np.ones_like(x0.data)
+    ub = ub * np.ones_like(x0.data)
 
     on_bound = np.zeros_like(x0.data,dtype=int)
     on_bound[np.equal(x0.data,lb)] = -1
@@ -56,8 +57,9 @@ def nsdogbox(fun,grad,reg_grad,x0:Patch,lb=None,ub=None,initial_radius=None,thre
     nfev = 1
     njev = 0
     n_reg_jev = 0
-    #B = BFGS(init_scale=1e-10)
-    B = SR1(init_scale=1e-10)
+    # B = BFGS(init_scale=1e-6)
+    B = BFGS(init_scale=1e-10)
+    #B = SR1(init_scale=1e-10)
     B.initialize(len(x.data),'hess')
     scale = np.ones_like(x0.data)
     scaleinv = 1/scale

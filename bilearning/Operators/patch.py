@@ -12,16 +12,19 @@ class Patch:
         return self.data.reshape((self.px,self.py))
     def map_to_img(self,img):
         nx,ny = img.shape
+        mx = nx//self.px
+        my = ny//self.py
         m = self.get_matrix()
-        m = np.kron(m,np.ones((nx//self.px,ny//self.py)))
+        m = np.kron(m,np.ones((mx,my)))
+        #return (m/(nx//self.px*ny//self.py)).ravel()
         return m.ravel()
     def reduce_from_img(self,img):
         nx,ny = img.shape
         mx = nx//self.px
         my = ny//self.py
         result = np.add.reduceat(np.add.reduceat(img, np.arange(0, img.shape[0], mx), axis=0),np.arange(0, img.shape[1], my), axis=1)
-        #return (result/mx).ravel()
-        return result.ravel()
+        return (result/(mx*my)).ravel()
+        #return result.ravel()
     def __str__(self) -> str:
         return f'Patch ({self.data},{self.px},{self.py})'
     def __repr__(self) -> str:

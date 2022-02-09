@@ -2,6 +2,8 @@ import argparse
 import os
 import sys
 import numpy as np
+import warnings
+warnings.filterwarnings('ignore')
 
 from bilearning.Operators.patch import Patch
 from bilearning.Learning.optimization import find_optimal_data_scalar, find_optimal_data_patch

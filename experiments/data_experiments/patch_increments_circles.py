@@ -4,13 +4,10 @@ import os
 import sys
 sys.path.append('../../')
 from ast import literal_eval
-
 from bilearning.Operators.patch import Patch
 
-
-
-nrows = np.array([1,2,4,8,16,32,64])
-lambda0 = 50.0*np.ones(nrows[0]**2)
+nrows = np.array([1,2,4,8,16,32])
+lambda0 = 20.0*np.ones(nrows[0]**2)
 
 out_dir = 'patch_increments_circles_patches'
 if not os.path.isdir(out_dir):
@@ -50,6 +47,7 @@ with open(summary_table_dir, 'w+') as f:
         f.write(','.join(info))
 
         if j < len(nrows):
+            #lambda_opt = lambda_opt + np.random.random(lambda_opt.shape)
             p = Patch(lambda_opt, r, r)
             lambda0 = p.map_to_img(np.ones((nrows[j],nrows[j])))
-            #lambda0 = 8.9*np.ones(nrows[j]**2)
+            #lambda0 = 12.0*np.ones(nrows[j]**2)

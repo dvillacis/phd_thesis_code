@@ -23,7 +23,10 @@ original.save(name+'_true_1.png')
 
 # Adding gaussian noise
 mean = 0
-var = 0.1
+var = 0.2
+mean2 = 0
+var2 = 0.05
+
 ## Full image
 noise = np.random.normal(mean, var**0.5, (w, h))
 noisy_full = np.clip(np.array(original)/255 + noise,0.0,1.0)
@@ -31,16 +34,14 @@ noisy_full = Image.fromarray(noisy_full*255).convert('L')
 noisy_full.save(name+'_data_1.png')
 
 ## Patch only
-noise = np.hstack((np.random.normal(mean, var**0.5, (w//2, h//2)),np.zeros((w//2,h//2))))
-noise = np.vstack((noise,np.zeros((w//2,h))))
+noise = np.random.normal(mean, var**0.5, (w//4, h//4))
+noise = np.kron(np.eye(4),noise)
 noisy_patch = np.clip(np.array(original)/255 + noise, 0.0, 1.0)
 noisy_patch = Image.fromarray(noisy_patch*255).convert('L')
 original.save(name+'_true_2.png')
 noisy_patch.save(name+'_data_2.png')
 
 ## Two patch diff noise levels
-mean2 = 0
-var2 = 0.05
 noise = np.hstack(
     (np.random.normal(mean, var**0.5, (w//2, h//2)), np.zeros((w//2, h//2))))
 noise_low = np.hstack(

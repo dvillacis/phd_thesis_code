@@ -6,7 +6,7 @@ sys.path.append('../../')
 
 from bilearning.Operators.patch import Patch
 
-nrows = np.array([1,2,4,8,16,32,64])
+nrows = np.array([1,2,4,8,16,32])
 lambda0 = 60.0*np.ones(nrows[0]**2)
 
 out_dir = 'patch_increments_cameraman_10'
