@@ -30,7 +30,7 @@ def quality_patch(original,noisy,patch_size):
             par = np.fromstring(par, dtype=float, sep=', ')
             par = Patch(par, patch_size, patch_size)
             #print(par)
-            reconstruction = patch_denoise(noisy, data_parameter=par, reg_parameter=OnesPatch(patch_size, patch_size), niter=3000)
+            reconstruction = patch_denoise(noisy, data_parameter=OnesPatch(patch_size, patch_size), reg_parameter=par, niter=3000)
     l2_noisy = l2_cost(original, noisy)
     l2_rec = l2_cost(original, reconstruction)
     psnr_noisy = psnr(original, noisy)
@@ -58,5 +58,3 @@ with open(os.path.join(patch_increments_dir, 'validation/validation.out'), 'w') 
             Image.fromarray(rec*255).convert('L').save(os.path.join(patch_increments_dir,f'validation/{p}',f'rec_{img_num}.png'))
         out.write('\n')
                 
-    
-        

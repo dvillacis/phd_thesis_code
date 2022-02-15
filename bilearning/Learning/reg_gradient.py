@@ -9,6 +9,7 @@ from bilearning.Operators.TOp import TOp
 from bilearning.Operators.patch import patch, reverse_patch
 from bilearning.Operators.norms import pointwise_euclidean_norm,tv_smooth_subdiff
 from bilearning.Operators.Tgamma import Tgamma
+from bilearning.Operators.patch import Patch
 
 def scalar_reg_adjoint(original,reconstruction,reg_parameter,show=False,tol=1e-10):
     nx,ny = original.shape
@@ -93,8 +94,8 @@ def smooth_scalar_reg_gradient_ds(ds_denoised,reg_parameter,gamma=100000):
     return grad/len(ds_denoised)
 
 # PATCH
-def patch_reg_adjoint(original,reconstruction,reg_parameter:np.ndarray,show=False):
-    reg_parameter = patch(reg_parameter,original)
+def patch_reg_adjoint(original,reconstruction,reg_parameter:Patch,show=False):
+    reg_parameter = reg_parameter.map_to_img(original)
     nx,ny = original.shape
     n = nx*ny
     K = pylops.Gradient(dims=(nx,ny),kind='forward')
@@ -105,9 +106,11 @@ def patch_reg_adjoint(original,reconstruction,reg_parameter:np.ndarray,show=Fals
     Act = ActiveOp(reconstruction)
     T = TOp(reconstruction.ravel())
     Inact = InactiveOp(reconstruction)
-    A = pylops.Block([[Id,K.adjoint()],[-L*T,Inact + 1e-5*Act]])
+    A = pylops.Block([[Id,K.adjoint()],[-L*T,Inact + 1e-9*Act]])
     b = np.concatenate((reconstruction.ravel()-original.ravel(),np.zeros(2*n)),axis=0)
-    p = scipy.sparse.linalg.gmres(A,b,atol='legacy',maxiter=100)
+    p = scipy.sparse.linalg.gmres(A,b,tol=1e-4,maxiter=3000)
+    if p[1:][0] > 0:
+        print(p[1:])
     # p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),tol=1e-4)
     if show==True:
         print(f'res:{np.linalg.norm(A*p[0]-b)}')
@@ -115,7 +118,7 @@ def patch_reg_adjoint(original,reconstruction,reg_parameter:np.ndarray,show=Fals
     adj = p[0][:n]
     return adj
 
-def patch_reg_gradient(original,noisy,reconstruction,reg_parameter:np.ndarray,tol=1e-7):
+def patch_reg_gradient(original,noisy,reconstruction,reg_parameter:Patch,tol=1e-7):
     p = patch_reg_adjoint(original,reconstruction,reg_parameter)
     nx,ny = original.shape
     n = nx*ny
@@ -128,7 +131,7 @@ def patch_reg_gradient(original,noisy,reconstruction,reg_parameter:np.ndarray,to
     nKu = np.linalg.norm(np.vstack((Kxu,Kyu)).T,axis=1)
     mul = np.where(nKu<tol,0,-1/nKu)
     grad = mul * (Kxu * Kxp + Kyu * Kyp)
-    grad = reverse_patch(grad,reg_parameter)
+    grad = reg_parameter.reduce_from_img(grad.reshape(original.shape))
     return grad
 
 def patch_reg_gradient_ds(ds_denoised,reg_parameter):
@@ -138,8 +141,8 @@ def patch_reg_gradient_ds(ds_denoised,reg_parameter):
     return grad/len(ds_denoised)
 
 # SMOOTH PATCH
-def smooth_patch_reg_adjoint(original,reconstruction,reg_parameter,show=False,gamma=1000):
-    reg_parameter = patch(reg_parameter,original)
+def smooth_patch_reg_adjoint(original,reconstruction,reg_parameter:Patch,show=False,gamma=1000):
+    reg_parameter = reg_parameter.map_to_img(original)
     nx,ny = original.shape
     n = nx*ny
     K = pylops.Gradient(dims=(nx,ny),kind='forward')
@@ -149,7 +152,9 @@ def smooth_patch_reg_adjoint(original,reconstruction,reg_parameter,show=False,ga
     Tg = Tgamma(reconstruction.ravel(),gamma=gamma)
     A = pylops.Block([[Idn,K.adjoint()],[-L*Tg,Id]])
     b = np.concatenate(((reconstruction.ravel()-original.ravel()),np.zeros(2*n)),axis=0)
-    p = scipy.sparse.linalg.gmres(A,b,atol='legacy',maxiter=100)
+    p = scipy.sparse.linalg.gmres(A,b,tol=1e-4,maxiter=3000)
+    if p[1:][0] > 0:
+        print(p[1:])
     #p = pylops.optimization.solver.cg(A,b,np.zeros_like(b),niter=10)
     if show==True:
         print(f'cg_out: {p[1:]}')
@@ -169,7 +174,8 @@ def smooth_patch_reg_gradient(original,noisy,reconstruction,reg_parameter,gamma=
     hx,hy = tv_smooth_subdiff(reconstruction.ravel(),gamma=gamma)
     #grad = L*(reconstruction.ravel()-noisy.ravel())
     grad = -(hx*Kxp + hy*Kyp)
-    grad = reverse_patch(grad,reg_parameter)
+    grad = reg_parameter.reduce_from_img(grad.reshape(original.shape))
+    #grad = reverse_patch(grad,reg_parameter)
     return grad
 
 def smooth_patch_reg_gradient_ds(ds_denoised,reg_parameter):
