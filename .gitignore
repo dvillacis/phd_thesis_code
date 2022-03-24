@@ -27,5 +27,7 @@ experiments/data_experiments/scalar_plot_faces
 experiments/data_experiments/initialization_data_parameter
 experiments/reg_experiments/patch_increments_circles
 experiments/reg_experiments/patch_increments_faces
+experiments/reg_experiments/patch_increments_cameraman
+experiments/reg_experiments/patch_increments_cameraman_nh
 .vscode
 .ipynb_checkpoints

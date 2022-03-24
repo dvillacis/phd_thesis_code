@@ -67,7 +67,7 @@ if parameter_type == 'scalar':
 else:
     px,py = patch_data.shape
     paramater_initial_value = Patch(patch_data.ravel(),px,py)
-    optimal,optimal_ds = find_optimal_reg_patch(dataset_file,paramater_initial_value,show=show)
+    optimal,optimal_ds = find_optimal_reg_patch(dataset_file,paramater_initial_value,show=show,gamma=gamma,threshold_radius=thr)
     if optimal.status == 1:
         print(f'Optimal parameter found:\n{optimal.x}')
     else:

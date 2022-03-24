@@ -1,4 +1,6 @@
+import time
 import numpy as np
+import scipy.sparse as sp
 from numpy.linalg import norm, lstsq
 from pyproximal import proximal
 from scipy.optimize._lsq.dogbox import dogleg_step,find_intersection
@@ -6,10 +8,11 @@ from scipy.optimize._lsq.common import step_size_to_bound,in_bounds,update_tr_ra
 from scipy.optimize import BFGS, SR1
 from scipy.optimize import OptimizeResult
 
+
 from bilearning.Operators.patch import Patch
 
 def print_iteration_dogbox(iteration, nfev, cost, cost_reduction,
-                              step_norm, optimality,radius):
+                              step_norm, optimality,radius,Bcond):
     if cost_reduction is None:
         cost_reduction = " " * 15
     else:
@@ -20,17 +23,25 @@ def print_iteration_dogbox(iteration, nfev, cost, cost_reduction,
     else:
         step_norm = "{0:^15.2e}".format(step_norm)
 
-    print("{0:^15}{1:^15}{2:^15.4e}{3}{4}{5:^15.2e}{6:^15.2e}"
+    print("{0:^15}{1:^15}{2:^15.4e}{3}{4}{5:^15.2e}{6:^15.2e}{7:^15.2e}"
           .format(iteration, nfev, cost, cost_reduction,
-                  step_norm, optimality,radius))
+                  step_norm, optimality,radius,Bcond))
+    # print("{0:^15}{1:^15}{2:^15.4e}{3}{4}{5:^15.2e}{6:^15.2e}"
+    #       .format(iteration, nfev, cost, cost_reduction,
+    #               step_norm, optimality, radius ))
 
 
 def print_header_dogbox():
-    print("{0:^15}{1:^15}{2:^15}{3:^15}{4:^15}{5:^15}{6:^15}"
+    print("{0:^15}{1:^15}{2:^15}{3:^15}{4:^15}{5:^15}{6:^15}{7:^15}"
           .format("Iteration", "Total nfev", "Cost", "Cost reduction",
-                  "Step norm", "Optimality", "TR-Radius"))
+                  "Step norm", "Optimality", "TR-Radius", "B Cond"))
+    # print("{0:^15}{1:^15}{2:^15}{3:^15}{4:^15}{5:^15}{6:^15}"
+    #       .format("Iteration", "Total nfev", "Cost", "Cost reduction",
+    #               "Step norm", "Optimality", "TR-Radius"))
 
 def nsdogbox(fun,grad,reg_grad,x0:Patch,lb=None,ub=None,initial_radius=None,threshold_radius=1e-4,radius_tol=1e-9,verbose=0,xtol=1e-9,ftol=1e-9,gtol=1e-9,max_nfev=2000,max_radius=1000):
+
+    tic = time.perf_counter()
 
     if not lb:
         lb = 1e-12
@@ -58,9 +69,10 @@ def nsdogbox(fun,grad,reg_grad,x0:Patch,lb=None,ub=None,initial_radius=None,thre
     njev = 0
     n_reg_jev = 0
     # B = BFGS(init_scale=1e-6)
-    B = BFGS(init_scale=1e-10)
+    B = BFGS(init_scale=0.1)#,exception_strategy='damp_update')
     #B = SR1(init_scale=1e-10)
     B.initialize(len(x.data),'hess')
+    Bcond_hist = []
     scale = np.ones_like(x0.data)
     scaleinv = 1/scale
 
@@ -87,7 +99,9 @@ def nsdogbox(fun,grad,reg_grad,x0:Patch,lb=None,ub=None,initial_radius=None,thre
             termination_status = 1
 
         if verbose == 2:
-            print_iteration_dogbox(iteration,nfev,fun(x),actual_reduction,step_norm,g_norm,radius)
+            Bcond = np.linalg.cond(B.get_matrix())
+            print_iteration_dogbox(iteration,nfev,fun(x),actual_reduction,step_norm,g_norm,radius,Bcond)
+            Bcond_hist.append(Bcond)
 
         if termination_status is not None or nfev == max_nfev:
             break
@@ -155,11 +169,15 @@ def nsdogbox(fun,grad,reg_grad,x0:Patch,lb=None,ub=None,initial_radius=None,thre
             f = f_new
 
             if radius >= threshold_radius:
-                B.update(step,g-grad(x_new))
+                if np.dot(step, grad(x_new)-g) > 1e-4:
+                    B.update(step,grad(x_new)-g)
+                #print(f'B cond: {np.linalg.cond(B.get_matrix())}')
                 njev +=1
                 g = grad(x_new)
             else:
-                B.update(step,g-reg_grad(x_new))
+                if np.dot(step, reg_grad(x_new)-g) > 1e-4:
+                    B.update(step,reg_grad(x_new)-g)
+                #print(f'reg B cond: {np.linalg.cond(B.get_matrix())}')
                 n_reg_jev += 1
                 g = reg_grad(x_new)
         else:
@@ -168,9 +186,10 @@ def nsdogbox(fun,grad,reg_grad,x0:Patch,lb=None,ub=None,initial_radius=None,thre
             actual_reduction = 0
 
         iteration += 1
+    toc = time.perf_counter()
     if termination_status is None:
         termination_status = 0
 
     return OptimizeResult(
         x=x, fun=f, jac=g, grad=g_full, optimality=g_norm,
-        active_mask=on_bound, nfev=nfev, njev=njev, n_reg_jev=n_reg_jev,nit=iteration, status=termination_status, message=termination_status)
+        active_mask=on_bound, nfev=nfev, njev=njev, n_reg_jev=n_reg_jev,nit=iteration, status=termination_status, message=f'{toc - tic:0.4f} s - {np.mean(Bcond_hist)} - {np.max(Bcond_hist)}')

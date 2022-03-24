@@ -1,19 +1,15 @@
+
 import numpy as np
 import os
 import sys
 from ast import literal_eval
+sys.path.append('../../')
+from bilearning.Operators.patch import Patch
 
-def patch(x,out):
-    nx,ny = out.shape
-    px = int(np.sqrt(len(x)))
-    x = x.reshape((px,px))
-    x = np.kron(x,np.ones((nx//px,ny//px)))
-    return x.ravel()
+nrows = np.array([1,2,4,8,16,32])
+alpha0 = 0.0155*np.ones(nrows[0]**2)
 
-nrows = np.array([4,8,16,32])
-alpha0 = 0.0155*np.ones(16)
-
-out_dir = 'cameraman_patch_increments_reg_5'
+out_dir = 'patch_increments_cameraman'
 #out_dir = os.path.join(out_dir,str(patch_size))
 if not os.path.isdir(out_dir):
     os.mkdir(out_dir)
@@ -24,8 +20,8 @@ with open(summary_table_dir,'w+') as f:
     for r in nrows:
         j+=1
         print(f'Executing the patch increment experiment with patch size:{r}x{r}')
-        cmd = f'python ../regularization_learning.py ../datasets/cameraman_128_5/filelist.txt -t patch -t patch -prows {str(r)} -pdata {str(alpha0.tolist()).strip("[]").replace(",","")} -o {os.path.join(out_dir,str(r))} -v'
-        print(cmd[:100])
+        cmd = f'python ../../regularization_learning.py ../../datasets/cameraman_128_5/filelist.txt -t patch -t patch -prows {str(r)} -pdata {str(alpha0.tolist()).strip("[]").replace(",","")} -o {os.path.join(out_dir,str(r))} -v'
+        print(cmd[:150])
         os.system(cmd)
         ex_summary_path = os.path.join(out_dir,str(r),'summary.out')
         ex_quality_path = os.path.join(out_dir,str(r),'quality.out')
@@ -51,4 +47,5 @@ with open(summary_table_dir,'w+') as f:
         f.write(','.join(info))
 
         if j < len(nrows):
-            alpha0 = patch(alpha_opt,np.ones((nrows[j],nrows[j])))
+            p = Patch(alpha_opt, r, r)
+            alpha0 = p.map_to_img(np.ones((nrows[j], nrows[j])))
